@@ -1,0 +1,61 @@
+﻿@page "/Equipment"
+@using Sl.InventControl.Data;
+@using Sl.InventControl.Service;
+
+@inject DbService dbService;
+@inject IDialogService DialogService
+
+<PageTitle>Equipment</PageTitle>
+
+
+<MudTable Items="@Items" Dense="true" Hover="true" Filter="new Func<EquipmentModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    <ToolBarContent>
+        <MudStack Row="true">
+            <MudTooltip Text="Manage equipment categories">
+                <MudIconButton Icon="@Icons.Material.Filled.Category" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentCategories" />
+            </MudTooltip>
+
+            <MudTooltip Text="Add new equipment">
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipment" />
+            </MudTooltip>
+            
+            
+            <MudText Typo="Typo.h6">Equipment</MudText>
+
+        </MudStack>
+        <MudSpacer />
+        
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    
+        
+    <HeaderContent>
+        <MudTh>Actions</MudTh>
+        <MudTh>Serial number</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Make</MudTh>
+        <MudTh>Model</MudTh>
+        <MudTh>Location</MudTh>
+        <MudTh>Remark</MudTh>
+        <MudTh>Available</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Actions">
+            <MudStack Row="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditItem(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteItem(context))" />
+            </MudStack>
+
+        </MudTd>
+        <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
+        <MudTd DataLabel="Type">@context.Type.Name</MudTd>
+        <MudTd DataLabel="Make">@context.Make</MudTd>
+        <MudTd DataLabel="Model">@context.Model</MudTd>
+        <MudTd DataLabel="Location">@context.Location</MudTd>
+        <MudTd DataLabel="Remark">@context.Remark</MudTd>
+        <MudTd DataLabel="Available">@(context.IsAvailable? "Yes" : "No")</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

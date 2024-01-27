@@ -1,0 +1,37 @@
+﻿@page "/"
+@using Sl.InventControl.Data;
+@using Sl.InventControl.Service;
+
+@inject DbService dbService;
+
+<PageTitle>Status overview</PageTitle>
+
+<h1>Status overview</h1>
+
+<MudTable Items="@loans" Dense="@dense" Hover="@hover">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Status overview</MudText>
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddLoan" />
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@Refresh" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Loan</MudTh>
+    </HeaderContent>
+        
+    <RowTemplate>
+            <MudTd>@context.OwnerEmployee</MudTd>
+            @foreach (var item in context.Items) {
+                /*@if (package.DeploymentConditions.Any(c => c.Name == context.Name || context.MemberOf.Any(m => m.Name == c.Name))) {
+                    <MudTd>@string.Join(',',package.TaskSteps.Select(x => x.State).ToArray())</MudTd>
+                } else {
+                    <MudTd>"N/A"</MudTd>
+                }*/
+                <MudTd>@item.Model</MudTd>
+            }
+                    
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

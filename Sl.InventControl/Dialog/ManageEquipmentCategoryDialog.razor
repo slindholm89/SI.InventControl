@@ -1,0 +1,93 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudStack Row="true">
+            <MudTextField @bind-Value="@category" TextUpdateSuppression="false" Label="Category name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
+        </MudStack>
+
+        <MudPaper>
+            <MudList>
+                @foreach(var cat in categories) {
+                    <MudListItem>
+                        <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteCategory(cat))" />
+                            <MudText>@cat.Name</MudText>
+                        </MudStack>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Manage equipment category?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public List<EquipmentCategoryModel> categories { get; set; } = new List<EquipmentCategoryModel>();
+
+    private string? category { get; set; }
+
+    void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(category) && !categories.Any(c => c.Name.Equals(category, StringComparison.InvariantCultureIgnoreCase)))) {
+            AddEquipmentType();
+            
+            category = string.Empty;
+            Task.Delay(100).Wait();
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteCategory(EquipmentCategoryModel cat) {
+        categories = categories.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        StateHasChanged();
+    }
+
+    private void AddEquipmentType() {
+        if (!string.IsNullOrWhiteSpace(category) && !categories.Any(c => c.Name.Equals(category, StringComparison.InvariantCultureIgnoreCase))) {
+            categories.Add(new EquipmentCategoryModel{Name = category});
+            category = "";
+            StateHasChanged();
+        }
+    }
+
+    private void ExecuteOkClick() {
+
+        if (!categories.Any()) {
+            Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
+        } else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(categories));
+        }
+
+    }
+}

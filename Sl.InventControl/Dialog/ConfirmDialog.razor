@@ -1,0 +1,37 @@
+﻿
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            
+            @Caption
+            <!--<MudSpacer />
+            <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Class="mr-3 mb-n1" />-->
+
+        </MudText>        
+    </TitleContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Caption { get; set; } = "Confirm?";
+    [Parameter] public string SnackbarInfo { get; set; } = "action confirmed";
+    
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void ExecuteOkClick() {
+        //In a real world scenario this bool would probably be a service to delete the item from api/database
+        Snackbar.Add(SnackbarInfo, Severity.Success);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

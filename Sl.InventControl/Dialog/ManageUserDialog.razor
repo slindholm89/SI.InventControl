@@ -1,0 +1,63 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudItem xs="12" >
+            <MudStack Row="true">
+                <MudTextField @bind-Value="@User.FirstName" Label="First Name" ReadOnly="false" />
+                <MudTextField @bind-Value="@User.LastName" Label="Surname" ReadOnly="false" />
+            </MudStack>
+            <MudStack Row="true">
+                <MudTextField @bind-Value="@User.PhoneNumber" Label="Phone" ReadOnly="false" />
+                <MudTextField @bind-Value="@User.Email" Label="Mail" ReadOnly="false" />
+            </MudStack>
+            <MudTextField @bind-Value="@User.Department" Label="Department" ReadOnly="false" />
+
+        </MudItem>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Confirm?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public EmployeeModel User { get; set; } = new EmployeeModel();
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void ExecuteOkClick() {
+
+        if(string.IsNullOrEmpty(User.FirstName) || string.IsNullOrEmpty(User.Department)) {
+            Snackbar.Add("Please provide at least a first name and department", Severity.Warning);
+        }else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(User));
+        }
+
+    }
+}

@@ -1,0 +1,192 @@
+﻿@using Sl.InventControl.Data;
+@using Sl.InventControl.Service;
+
+@inject DbService dbService;
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudItem xs="12" >
+
+            <MudStack>
+
+                <MudStack Row="true">
+                    <MudSelect T="EmployeeModel" Label="Owner" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Loan.OwnerEmployee" ToStringFunc="@ToStringFunc">
+                        @foreach (var emp in employees.Where(x => Loan.BorowingEmployee != x)) {
+                            <MudSelectItem T="EmployeeModel" Value="emp">@(emp.FirstName + " " + emp.LastName)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="EmployeeModel" Label="Lender" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Loan.BorowingEmployee" ToStringFunc="@ToStringFunc">
+                        @foreach (var emp in employees.Where(x => Loan.OwnerEmployee != x)) {
+                            <MudSelectItem T="EmployeeModel" Value="emp">@(emp.FirstName + " " + emp.LastName)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudDatePicker Label="Return by:" Editable="true" Color="Color.Success" @bind-Date="@(Loan.ReturnByDate)" Placeholder="Select Date" />
+                </MudStack>
+
+                <MudTable Items="@availableItems" Dense="true" Hover="true" Filter="new Func<EquipmentModel,bool>(FilterFunc1)">
+                    <!--Filter="new Func<EquipmentModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">-->
+                    <ToolBarContent>
+                        <MudStack Row="true">
+                            <!--<MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => AddEquipment(@context))" />-->
+                            <MudText Typo="Typo.h6">Available Equipment</MudText>
+                        </MudStack>
+                        <MudSpacer />
+
+                        <MudTextField @bind-Value="searchString1" TextUpdateSuppression="false" Placeholder="Serialnumber" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" OnKeyDown="OnKeyDown" IconSize="Size.Medium" Class="mt-0" />
+                    </ToolBarContent>
+
+
+                    <HeaderContent>
+                        <MudTh>Add</MudTh>
+                        <MudTh>Serial number</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Make</MudTh>
+                        <MudTh>Model</MudTh>
+                        <MudTh>Location</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Add">
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => AddEquipment(context))" />
+                        </MudTd>
+                        <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
+                        <MudTd DataLabel="Type">@context.Type</MudTd>
+                        <MudTd DataLabel="Make">@context.Make</MudTd>
+                        <MudTd DataLabel="Model">@context.Model</MudTd>
+                        <MudTd DataLabel="Location">@context.Location</MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+
+
+                <MudTable Items="@(Loan.Items)" Dense="true" Hover="true">
+                    <!--Filter="new Func<EquipmentModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">-->
+                    <ToolBarContent>
+                        <MudStack Row="true">
+                            <MudText Typo="Typo.h6">Added Equipment</MudText>
+                        </MudStack>                        
+                    </ToolBarContent>
+
+
+                    <HeaderContent>
+                        <MudTh>Remove</MudTh>
+                        <MudTh>Serial number</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Make</MudTh>
+                        <MudTh>Model</MudTh>
+                        <MudTh>Location</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Remove">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => RemoveEquipment(context))" />
+                        </MudTd>
+                        <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
+                        <MudTd DataLabel="Type">@context.Type</MudTd>
+                        <MudTd DataLabel="Make">@context.Make</MudTd>
+                        <MudTd DataLabel="Model">@context.Model</MudTd>
+                        <MudTd DataLabel="Location">@context.Location</MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </MudStack>
+
+
+        </MudItem>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Confirm?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public LoanModel Loan { get; set; } = new LoanModel();
+
+    private List<EquipmentModel> availableItems;
+    private List<EmployeeModel> employees;
+    public string searchString1 { get; set; } = "";
+
+    protected static readonly Func<EmployeeModel, string> ToStringFunc = e => e?.FirstName + " " + e?.LastName;
+
+    private bool FilterFunc1(EquipmentModel element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(EquipmentModel element, string searchString) {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (element.SerialNumber.Equals(searchString, StringComparison.OrdinalIgnoreCase)) {
+            AddEquipment(availableItems.First(e => e.SerialNumber.Equals(searchString, StringComparison.OrdinalIgnoreCase))).Wait();
+
+            return true;
+        }
+        if(element.SerialNumber.StartsWith(searchString, StringComparison.OrdinalIgnoreCase)) {
+            return true;
+        }
+       
+        return false;
+    }
+
+    async void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+
+            Task.Delay(100).Wait();
+            searchString1 = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private async Task RemoveEquipment(EquipmentModel item) {
+        availableItems.Add(item);
+        Loan.Items.Remove(item);
+    }
+
+    private async Task AddEquipment(EquipmentModel item) {
+        availableItems.Remove(item);
+        Loan.Items.Add(item);
+    }
+
+    private void ExecuteOkClick() {
+
+        if(Loan.OwnerEmployee is null || Loan.BorowingEmployee is null || Loan.ReturnByDate < DateTime.Now || !Loan.Items.Any() || Loan.OwnerEmployee == Loan.BorowingEmployee) {
+            Snackbar.Add("Please add required information", Severity.Warning);
+
+        }else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(Loan));
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync() {
+        availableItems = (await dbService.GetDbContent<EquipmentModel>(CommonNames.EquipmentFile)).Where(x => x.IsAvailable).ToList();
+        employees = (await dbService.GetDbContent<EmployeeModel>(CommonNames.EmployeeFile)).ToList();
+    }
+}

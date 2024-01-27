@@ -1,0 +1,44 @@
+﻿@page "/Loans"
+@using Sl.InventControl.Data;
+@using Sl.InventControl.Service;
+
+@inject DbService dbService;
+@inject IDialogService DialogService
+
+<PageTitle>Loans</PageTitle>
+
+
+<MudTable Items="@ActiveLoans" Dense="true" Hover="true" Filter="new Func<LoanModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    <ToolBarContent>
+        <MudStack Row="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddLoanAgreement" />
+            <MudText Typo="Typo.h6">Loans</MudText>
+
+        </MudStack>
+        <!--<MudSpacer />
+        
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>-->
+    </ToolBarContent>    
+        
+    <HeaderContent>
+        <MudTh>Actions</MudTh>
+        <MudTh>Owner</MudTh>
+        <MudTh>Lender</MudTh>
+        <MudTh>Return by</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Actions">
+            <MudStack Row="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditLoansAgreement(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.AssignmentReturn" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => ReturnLoansAgreement(context))" />
+            </MudStack>
+
+        </MudTd>
+        <MudTd DataLabel="Owner">@(context.OwnerEmployee.FirstName + " " + context.OwnerEmployee.LastName)</MudTd>
+        <MudTd DataLabel="Lender">@(context.BorowingEmployee.FirstName + " " + context.BorowingEmployee.LastName)</MudTd>
+        <MudTd DataLabel="Return by">@context.ReturnByDate.ToString()</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

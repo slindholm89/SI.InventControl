@@ -1,0 +1,84 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudItem xs="12" >
+            <MudPaper>
+                <MudStack Row="true">
+                    <MudTextField @bind-Value="@Item.Make" Label="Make" ReadOnly="false" />
+                    <MudTextField @bind-Value="@Item.Model" Label="Model" ReadOnly="false" />
+                </MudStack>
+            </MudPaper>
+            
+            <MudPaper>
+                <MudStack Row="true">
+                    <MudSelect T="EquipmentCategoryModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Type" ToStringFunc="@ToStringFunc">
+                        @foreach (var type in EquipmentTypes) {
+                            <MudSelectItem T="EquipmentCategoryModel" Value="type">@(type.Name)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="false" />
+                </MudStack>
+            </MudPaper>
+            
+
+            <MudStack Row="true">
+                <MudTextField @bind-Value="@Item.Location" Label="Location" ReadOnly="false" />
+                <MudTextField @bind-Value="@Item.Remark" Label="Remark" ReadOnly="false" />
+
+            </MudStack>
+            
+        </MudItem>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Confirm?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public List<EquipmentCategoryModel> EquipmentTypes { get; set; } = new List<EquipmentCategoryModel>();
+
+    [Parameter]
+    public EquipmentModel Item { get; set; } = new EquipmentModel();
+
+
+    protected static readonly Func<EquipmentCategoryModel, string> ToStringFunc = e => e?.Name ?? "";
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void ExecuteOkClick() {
+
+        if(string.IsNullOrEmpty(Item.SerialNumber) || Item.Type == null) {
+            Snackbar.Add("Please provide at least a serial number and Type", Severity.Warning);
+        }else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(Item));
+        }
+
+    }
+}

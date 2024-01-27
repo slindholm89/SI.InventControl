@@ -1,0 +1,49 @@
+﻿@page "/Users"
+@using Sl.InventControl.Data;
+@using Sl.InventControl.Service;
+
+@inject DbService dbService;
+@inject IDialogService DialogService
+
+<PageTitle>Employees</PageTitle>
+
+
+<MudTable Items="@Employees" Dense="true" Hover="true" Filter="new Func<EmployeeModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    <ToolBarContent>
+        <MudStack Row="true">
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddUser" />
+            <MudText Typo="Typo.h6">Registered users</MudText>
+
+        </MudStack>
+        <MudSpacer />
+        
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    
+        
+    <HeaderContent>
+        <MudTh>Actions</MudTh>
+        <MudTh>First Name</MudTh>
+        <MudTh>Surname</MudTh>
+        <MudTh>Department</MudTh>
+        <MudTh>Phone</MudTh>
+        <MudTh>Mail</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Actions">
+            <MudStack Row="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditUser(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteUser(context))" />
+            </MudStack>
+
+        </MudTd>
+        <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Surname">@context.LastName</MudTd>
+        <MudTd DataLabel="Department">@context.Department</MudTd>
+        <MudTd DataLabel="Phone">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="Mail">@context.Email</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

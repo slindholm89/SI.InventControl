@@ -1,0 +1,98 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudStack Row="true">
+            <MudTextField @bind-Value="@manufacturers" TextUpdateSuppression="false" Label="Manufacturers name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentManufacturer" />
+        </MudStack>
+
+        <MudPaper>
+            <MudList>
+                @foreach (var cat in manufacturers)
+                {
+                    <MudListItem>
+                        <MudStack Row="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteManufacturer(cat))" />
+                            <MudText>@cat.Name</MudText>
+                        </MudStack>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Caption { get; set; } = "Manage equipment Manufacturers?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public List<EquipmentManufacturersModel> manufacturers { get; set; } = new List<EquipmentManufacturersModel>();
+
+    private string? manufacturer { get; set; }
+
+    void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase))))
+                {
+                    AddEquipmentManufacturer();
+
+                    manufacturer = string.Empty;
+                    Task.Delay(100).Wait();
+                    StateHasChanged();
+                }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteManufacturer(EquipmentManufacturersModel cat)
+    {
+        manufacturers = manufacturers.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        StateHasChanged();
+    }
+
+    private void AddEquipmentManufacturer()
+    {
+        if (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            manufacturers.Add(new EquipmentManufacturersModel { Name = manufacturer });
+            manufacturer = "";
+            StateHasChanged();
+        }
+    }
+
+    private void ExecuteOkClick() {
+
+        if (!manufacturers.Any()) {
+            Snackbar.Add("Please provide at least 1 item Manufacturer", Severity.Warning);
+        } else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(manufacturers));
+        }
+
+    }
+}

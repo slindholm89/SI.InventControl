@@ -15,6 +15,10 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Category" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentCategories" />
             </MudTooltip>
 
+            <MudTooltip Text="Manage equipment Manufacturers">
+                <MudIconButton Icon="@Icons.Material.Filled.Factory" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentManufacturers" />
+            </MudTooltip>
+
             <MudTooltip Text="Add new equipment">
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipment" />
             </MudTooltip>
@@ -33,7 +37,7 @@
         <MudTh>Actions</MudTh>
         <MudTh>Serial number</MudTh>
         <MudTh>Type</MudTh>
-        <MudTh>Make</MudTh>
+        <MudTh>Manufacturer</MudTh>
         <MudTh>Model</MudTh>
         <MudTh>Location</MudTh>
         <MudTh>Remark</MudTh>

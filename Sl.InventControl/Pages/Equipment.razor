@@ -19,6 +19,14 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Factory" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentManufacturers" />
             </MudTooltip>
 
+            <MudTooltip Text="Manage equipment Models">
+                <MudIconButton Icon="@Icons.Material.Filled.Devices" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentManufacturers" />
+            </MudTooltip>
+
+            <MudTooltip Text="Manage equipment Locations">
+                <MudIconButton Icon="@Icons.Material.Filled.AddLocationAlt" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentManufacturers" />
+            </MudTooltip>
+
             <MudTooltip Text="Add new equipment">
                 <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipment" />
             </MudTooltip>
@@ -35,8 +43,9 @@
         
     <HeaderContent>
         <MudTh>Actions</MudTh>
+        <MudTh>Equipment ID</MudTh>
         <MudTh>Serial number</MudTh>
-        <MudTh>Type</MudTh>
+        <MudTh>Category</MudTh>
         <MudTh>Manufacturer</MudTh>
         <MudTh>Model</MudTh>
         <MudTh>Location</MudTh>
@@ -47,10 +56,12 @@
         <MudTd DataLabel="Actions">
             <MudStack Row="true">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditItem(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.ControlPointDuplicate" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditItem(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteItem(context))" />
             </MudStack>
 
         </MudTd>
+        <MudTd DataLabel="Equipment ID">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Type">@context.Type.Name</MudTd>
         <MudTd DataLabel="Make">@context.Make</MudTd>

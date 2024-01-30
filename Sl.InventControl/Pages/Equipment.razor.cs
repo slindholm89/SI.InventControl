@@ -94,24 +94,50 @@ namespace Sl.InventControl.Pages {
         private async Task AddEquipmentManufacturers()
         {
 
-            var existingManufacturers = await dbService.GetDbContent<EquipmentManufacturersModel>(CommonNames.EquipmentCategoryFile) ?? new List<EquipmentManufacturersModel>();
+            var existingManufacturers = await dbService.GetDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile) ?? new List<EquipmentManufacturerModel>();
 
-            var parameters = new DialogParameters<ManageEquipmentManufacturersDialog> {
+            var parameters = new DialogParameters<ManageEquipmentManufacturerDialog> {
                 {x => x.SnackbarInfo, $"Manufacturers updated successfully" },
                 {x => x.manufacturers, existingManufacturers.ToList() }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
-            var dialog = await DialogService.ShowAsync<ManageEquipmentManufacturersDialog>("manage type", parameters, options);
+            var dialog = await DialogService.ShowAsync<ManageEquipmentManufacturerDialog>("manage type", parameters, options);
             var result = await dialog.Result;
 
             if (!result.Canceled)
             {
-                await dbService.ClearDbContent<EquipmentManufacturersModel>(CommonNames.EquipmentCategoryFile);
-                var items = result?.Data as List<EquipmentManufacturersModel>;
+                await dbService.ClearDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile);
+                var items = result?.Data as List<EquipmentManufacturerModel>;
 
                 foreach (var item in items)
-                    await dbService.AddDbContent<EquipmentManufacturersModel>(CommonNames.EquipmentCategoryFile, item);
+                    await dbService.AddDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile, item);
+
+                await OnInitializedAsync();
+            }
+        }
+
+        private async Task AddEquipmentLocations()
+        {
+
+            var existingLocations = await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>();
+
+            var parameters = new DialogParameters<ManageEquipmentLocationDialog> {
+                {x => x.SnackbarInfo, $"Locations updated successfully" },
+                {x => x.locations, existingLocations.ToList() }
+            };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+            var dialog = await DialogService.ShowAsync<ManageEquipmentLocationDialog>("manage type", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                await dbService.ClearDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile);
+                var items = result?.Data as List<EquipmentLocationModel>;
+
+                foreach (var item in items)
+                    await dbService.AddDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile, item);
 
                 await OnInitializedAsync();
             }

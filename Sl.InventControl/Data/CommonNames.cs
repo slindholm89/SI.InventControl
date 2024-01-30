@@ -4,6 +4,7 @@
         public const string EquipmentFile = "equipment.json";
         public const string LoansFile = "loans.json";
         public const string EquipmentCategoryFile = "equipmentCategroy.json";
-        public const string EquipmentManufacturersModelFile = "equipmentManufacturers.json";
+        public const string EquipmentManufacturerFile = "equipmentManufactur.json";
+        public const string EquipmentLocationFile = "equipmentLocation.json";
     }
 }

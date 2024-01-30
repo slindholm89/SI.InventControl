@@ -1,0 +1,94 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudStack Row="true">
+            <MudTextField @bind-Value="@location" TextUpdateSuppression="false" Label="Location name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
+        </MudStack>
+
+        <MudPaper>
+            <MudList>
+                @foreach(var cat in locations) {
+                    <MudListItem>
+                        <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteLocation(cat))" />
+                            <MudText>@cat.Name</MudText>
+                        </MudStack>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Manage equipment location?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public List<EquipmentLocationModel> locations { get; set; } = new List<EquipmentLocationModel>();
+
+    private string? location { get; set; }
+
+    void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(location) && !locations.Any(c => c.Name.Equals(location, StringComparison.InvariantCultureIgnoreCase)))) {
+            AddEquipmentType();
+            
+            location = string.Empty;
+            Task.Delay(100).Wait();
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteLocation(EquipmentLocationModel cat) {
+        locations = locations.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        StateHasChanged();
+    }
+
+    private void AddEquipmentType() {
+        if (!string.IsNullOrWhiteSpace(location) && !locations.Any(c => c.Name.Equals(location, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            locations.Add(new EquipmentLocationModel { Name = location });
+            location = "";
+            StateHasChanged();
+        }
+    }
+
+    private void ExecuteOkClick() {
+
+        if (!locations.Any()) {
+            Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
+        } else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(locations));
+        }
+
+    }
+}

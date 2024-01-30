@@ -3,17 +3,17 @@
 @inject ISnackbar Snackbar
 
 <MudDialog>
-    <TitleContent>        
+    <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
             @Caption
-        </MudText>        
+        </MudText>
     </TitleContent>
-    
+
     <DialogContent>
         <MudStack Row="true">
-            <MudTextField @bind-Value="@manufacturers" TextUpdateSuppression="false" Label="Manufacturers name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentManufacturer" />
+            <MudTextField @bind-Value="@manufacturer" TextUpdateSuppression="false" Label="Manufacturer name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
         </MudStack>
 
         <MudPaper>
@@ -24,14 +24,14 @@
                         <MudStack Row="true">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteManufacturer(cat))" />
                             <MudText>@cat.Name</MudText>
-                        </MudStack>
-                    </MudListItem>
+                            </MudStack>
+                        </MudListItem>
                 }
             </MudList>
         </MudPaper>
     </DialogContent>
-    
-    
+
+
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
@@ -42,52 +42,58 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public string Caption { get; set; } = "Manage equipment Manufacturers?";
+    public string Caption { get; set; } = "Manage equipment manufacturer?";
 
-    [Parameter] 
+    [Parameter]
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentManufacturersModel> manufacturers { get; set; } = new List<EquipmentManufacturersModel>();
+    public List<EquipmentManufacturerModel> manufacturers { get; set; } = new List<EquipmentManufacturerModel>();
 
     private string? manufacturer { get; set; }
 
-    void OnKeyDown(KeyboardEventArgs args) {
+    void OnKeyDown(KeyboardEventArgs args)
+    {
         if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase))))
-                {
-                    AddEquipmentManufacturer();
+        {
+            AddEquipmentType();
 
-                    manufacturer = string.Empty;
-                    Task.Delay(100).Wait();
-                    StateHasChanged();
-                }
+            manufacturer = string.Empty;
+            Task.Delay(100).Wait();
+            StateHasChanged();
+        }
     }
 
-    private void Cancel() {
+    private void Cancel()
+    {
         MudDialog.Cancel();
     }
 
-    private void DeleteManufacturer(EquipmentManufacturersModel cat)
+    private void DeleteManufacturer(EquipmentManufacturerModel cat)
     {
         manufacturers = manufacturers.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
         StateHasChanged();
     }
 
-    private void AddEquipmentManufacturer()
+    private void AddEquipmentType()
     {
         if (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase)))
         {
-            manufacturers.Add(new EquipmentManufacturersModel { Name = manufacturer });
+            manufacturers.Add(new EquipmentManufacturerModel { Name = manufacturer });
             manufacturer = "";
             StateHasChanged();
         }
     }
 
-    private void ExecuteOkClick() {
+    private void ExecuteOkClick()
+    {
 
-        if (!manufacturers.Any()) {
-            Snackbar.Add("Please provide at least 1 item Manufacturer", Severity.Warning);
-        } else {
+        if (!manufacturers.Any())
+        {
+            Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
+        }
+        else
+        {
 
             Snackbar.Add(SnackbarInfo, Severity.Success);
 

@@ -117,6 +117,33 @@ namespace Sl.InventControl.Pages {
             }
         }
 
+        private async Task AddEquipmentModels()
+        {
+
+            var existingModels = await dbService.GetDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile) ?? new List<EquipmentModelModel>();
+
+            var parameters = new DialogParameters<ManageEquipmentModelDialog> {
+                {x => x.SnackbarInfo, $"Models updated successfully" },
+                { x => x.ManufacturerTypes, await dbService.GetDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile) ?? new List<EquipmentManufacturerModel>() },
+                {x => x.models, existingModels.ToList() }
+            };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+            var dialog = await DialogService.ShowAsync<ManageEquipmentModelDialog>("manage type", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                await dbService.ClearDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile);
+                var items = result?.Data as List<EquipmentModelModel>;
+
+                foreach (var item in items)
+                    await dbService.AddDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile, item);
+
+                await OnInitializedAsync();
+            }
+        }
+
         private async Task AddEquipmentLocations()
         {
 

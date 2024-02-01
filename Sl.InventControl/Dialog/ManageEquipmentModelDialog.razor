@@ -1,0 +1,105 @@
+﻿@using Sl.InventControl.Data;
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>        
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1"/>
+            @Caption
+        </MudText>        
+    </TitleContent>
+    
+    <DialogContent>
+        <MudStack Row="true">
+@*             <MudSelect T="EquipmentManufacturerModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models.Type" ToStringFunc="@ToStringFunc">
+                @foreach (var type in ManufacturerTypes)
+                {
+                    <MudSelectItem T="EquipmentManufacturerModel" Value="type">@(type.Name)</MudSelectItem>
+                }
+            </MudSelect> *@
+            <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
+        </MudStack>
+
+        <MudPaper>
+            <MudList>
+                @foreach(var cat in models) {
+                    <MudListItem>
+                        <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteModel(cat))" />
+                            <MudText>@cat.Name</MudText>
+                        </MudStack>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="ExecuteOkClick">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public string Caption { get; set; } = "Manage equipment model?";
+
+    [Parameter] 
+    public string SnackbarInfo { get; set; } = "action confirmed";
+
+    [Parameter]
+    public List<EquipmentManufacturerModel> ManufacturerTypes { get; set; } = new List<EquipmentManufacturerModel>();
+
+    [Parameter]
+    public List<EquipmentModelModel> models { get; set; } = new List<EquipmentModelModel>();
+
+    private string? model { get; set; }
+
+    void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(model) && !models.Any(c => c.Name.Equals(model, StringComparison.InvariantCultureIgnoreCase))))
+        {
+            AddEquipmentType();
+            
+            model = string.Empty;
+            Task.Delay(100).Wait();
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteModel(EquipmentModelModel cat) {
+        models = models.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        StateHasChanged();
+    }
+
+    private void AddEquipmentType() {
+        if (!string.IsNullOrWhiteSpace(model) && !models.Any(c => c.Name.Equals(model, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            models.Add(new EquipmentModelModel { Name = model });
+            model = "";
+            StateHasChanged();
+        }
+    }
+
+    private void ExecuteOkClick() {
+
+        if (!models.Any())
+        {
+            Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
+        } else {
+
+            Snackbar.Add(SnackbarInfo, Severity.Success);
+
+            MudDialog.Close(DialogResult.Ok(models));
+        }
+
+    }
+}

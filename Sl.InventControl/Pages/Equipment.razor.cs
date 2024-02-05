@@ -14,12 +14,12 @@ namespace Sl.InventControl.Pages {
         private bool FilterFunc(EquipmentModel element, string searchString) {
             if (string.IsNullOrWhiteSpace(searchString))
                 return true;
-            if (element.Make.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            /*if (element.Make.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Model.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Type.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+                return true;*/
             if (element.SerialNumber.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (element.Location.Contains(searchString, StringComparison.OrdinalIgnoreCase))
@@ -69,7 +69,7 @@ namespace Sl.InventControl.Pages {
 
         private async Task AddEquipmentCategories() {
 
-            var existingCategories = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new List<EquipmentCategoryModel>();
+            var existingCategories = await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new ();
 
             var parameters = new DialogParameters<ManageEquipmentCategoryDialog> {
                 {x => x.SnackbarInfo, $"Categories updated successfully" },
@@ -81,11 +81,11 @@ namespace Sl.InventControl.Pages {
             var result = await dialog.Result;
             
             if (!result.Canceled) {
-                await dbService.ClearDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile);
-                var items = result?.Data as List<EquipmentCategoryModel>;
+                await dbService.ClearDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile);
+                var items = result?.Data as List<EquipmentTypeModel>;
                 
                 foreach(var item in items)
-                    await dbService.AddDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile, item);
+                    await dbService.AddDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile, item);
                 
                 await OnInitializedAsync();
             }
@@ -175,7 +175,7 @@ namespace Sl.InventControl.Pages {
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Create new item" },
                 {x => x.SnackbarInfo, $"Item created successfully" },
-                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new List<EquipmentCategoryModel>() }        
+                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () }        
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
 

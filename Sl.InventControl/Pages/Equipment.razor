@@ -63,9 +63,9 @@
         </MudTd>
         <MudTd DataLabel="Equipment ID">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
-        <MudTd DataLabel="Type">@context.Type.Name</MudTd>
-        <MudTd DataLabel="Make">@context.Make</MudTd>
-        <MudTd DataLabel="Model">@context.Model</MudTd>
+        <MudTd DataLabel="Type">@context.Type.Type</MudTd>
+        <MudTd DataLabel="Make">@context.Type.Make</MudTd>
+        <MudTd DataLabel="Model">@context.Type.Model</MudTd>
         <MudTd DataLabel="Location">@context.Location</MudTd>
         <MudTd DataLabel="Remark">@context.Remark</MudTd>
         <MudTd DataLabel="Available">@(context.IsAvailable? "Yes" : "No")</MudTd>

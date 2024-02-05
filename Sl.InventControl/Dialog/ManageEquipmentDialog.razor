@@ -12,24 +12,23 @@
     
     <DialogContent>
         <MudItem xs="12" >
-            <MudPaper>
+            <!--<MudPaper>
                 <MudStack Row="true">
-                    <MudTextField @bind-Value="@Item.Make" Label="Make" ReadOnly="false" />
-                    <MudTextField @bind-Value="@Item.Model" Label="Model" ReadOnly="false" />
+                    <MudTextField @bind-Value="@Item.Type.Make" Label="Make" ReadOnly="true" />
+                    <MudTextField @bind-Value="@Item.Type.Model" Label="Model" ReadOnly="true" />
                 </MudStack>
-            </MudPaper>
-            
+            </MudPaper>-->
+
             <MudPaper>
                 <MudStack Row="true">
-                    <MudSelect T="EquipmentCategoryModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Type" ToStringFunc="@ToStringFunc">
+                    <MudSelect T="EquipmentTypeModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Type" ToStringFunc="@ToStringFunc">
                         @foreach (var type in EquipmentTypes) {
-                            <MudSelectItem T="EquipmentCategoryModel" Value="type">@(type.Name)</MudSelectItem>
+                            <MudSelectItem T="EquipmentTypeModel" Value="type">@(type.Type): @(type.Make) - @(type.Model)</MudSelectItem>
                         }
                     </MudSelect>
                     <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="false" />
                 </MudStack>
             </MudPaper>
-            
 
             <MudStack Row="true">
                 <MudTextField @bind-Value="@Item.Location" Label="Location" ReadOnly="false" />
@@ -57,16 +56,19 @@
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentCategoryModel> EquipmentTypes { get; set; } = new List<EquipmentCategoryModel>();
+    public List<EquipmentTypeModel> EquipmentTypes { get; set; } = new();
 
     [Parameter]
-    public EquipmentModel Item { get; set; } = new EquipmentModel();
+    public EquipmentModel Item { get; set; } = new()
+        {
+            Type = new()
+        };
 
-
-    protected static readonly Func<EquipmentCategoryModel, string> ToStringFunc = e => e?.Name ?? "";
+    protected static readonly Func<EquipmentTypeModel, string> ToStringFunc = e => $"{e?.Type}: {e?.Make} - {e?.Model}";
 
     private void Cancel() {
         MudDialog.Cancel();
+        MudDialog.Close(DialogResult.Cancel());
     }
 
     private void ExecuteOkClick() {

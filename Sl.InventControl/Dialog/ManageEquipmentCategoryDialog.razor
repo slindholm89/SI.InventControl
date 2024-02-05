@@ -11,22 +11,46 @@
     </TitleContent>
     
     <DialogContent>
-        <MudStack Row="true">
-            <MudTextField @bind-Value="@category" TextUpdateSuppression="false" Label="Category name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
-        </MudStack>
+        <MudPaper Class="pa-4 ma-4">
+            <MudStack Row="true">
+                <MudTooltip Text="e.g Laptop">
+                    <MudTextField @bind-Value="@type" TextUpdateSuppression="false" Label="Item Type" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
+                </MudTooltip>
+                
+                <MudTooltip Text="e.g Lenovo">
+                    <MudTextField @bind-Value="@make" TextUpdateSuppression="false" Label="Make" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
+                </MudTooltip>
+                
+                <MudTooltip Text="e.g X1 Carbon">
+                    <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
+                </MudTooltip>
+                
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
+            </MudStack>
+        </MudPaper>
 
-        <MudPaper>
-            <MudList>
-                @foreach(var cat in categories) {
-                    <MudListItem>
-                        <MudStack Row="true">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteCategory(cat))" />
-                            <MudText>@cat.Name</MudText>
-                        </MudStack>
-                    </MudListItem>
-                }
-            </MudList>
+        <MudPaper Class="pa-4 ma-4">
+            <MudTable Items="@categories" Dense="true" Hover="true"> <!--Filter="new Func<EquipmentTypeModel,bool>(FilterFunc1)">-->
+                
+                <HeaderContent>
+                    <MudTh></MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Make</MudTh>
+                    <MudTh>Model</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Delete">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteCategory(context))" />
+                    </MudTd>
+                    <MudTd DataLabel="Type">@context.Type</MudTd>
+                    <MudTd DataLabel="Make">@context.Make</MudTd>
+                    <MudTd DataLabel="Model">@context.Model</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+            
         </MudPaper>
     </DialogContent>
     
@@ -41,16 +65,19 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
     [Parameter] 
-    public string Caption { get; set; } = "Manage equipment category?";
+    public string Caption { get; set; } = "Manage equipment categories";
 
     [Parameter] 
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentCategoryModel> categories { get; set; } = new List<EquipmentCategoryModel>();
+    public List<EquipmentTypeModel> categories { get; set; } = new ();
 
-    private string? category { get; set; }
+    private string? type { get; set; }
+    private string? make { get; set; }
+    private string? model { get; set; }
 
+    /*
     void OnKeyDown(KeyboardEventArgs args) {
         if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(category) && !categories.Any(c => c.Name.Equals(category, StringComparison.InvariantCultureIgnoreCase)))) {
             AddEquipmentType();
@@ -59,21 +86,30 @@
             Task.Delay(100).Wait();
             StateHasChanged();
         }
-    }
+    }*/
 
     private void Cancel() {
         MudDialog.Cancel();
     }
 
-    private void DeleteCategory(EquipmentCategoryModel cat) {
+    private void DeleteCategory(EquipmentTypeModel cat) {
         categories = categories.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
         StateHasChanged();
     }
 
     private void AddEquipmentType() {
-        if (!string.IsNullOrWhiteSpace(category) && !categories.Any(c => c.Name.Equals(category, StringComparison.InvariantCultureIgnoreCase))) {
-            categories.Add(new EquipmentCategoryModel{Name = category});
-            category = "";
+        if (!string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(make) && !string.IsNullOrWhiteSpace(model) &&
+            !categories.Any(c => c.Type.Equals(type, StringComparison.InvariantCultureIgnoreCase) &&
+            c.Make.Equals(make, StringComparison.InvariantCultureIgnoreCase) && 
+            c.Model.Equals(model, StringComparison.InvariantCultureIgnoreCase))) {
+                
+                categories.Add(new EquipmentTypeModel { 
+                    Type = type,
+                    Make = make,
+                    Model = model
+                });
+
+                type = make = model = "";
             StateHasChanged();
         }
     }

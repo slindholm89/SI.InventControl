@@ -22,7 +22,7 @@ namespace Sl.InventControl.Pages {
                 return true;*/
             if (element.SerialNumber.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Location.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            if (element.Location.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
 
 
@@ -30,13 +30,15 @@ namespace Sl.InventControl.Pages {
         }
 
         protected override async Task OnInitializedAsync() {
-            Items = (await dbService.GetDbContent<EquipmentModel>(CommonNames.EquipmentFile)).OrderBy(x => x.Type).ToList();
+            Items = (await dbService.GetDbContent<EquipmentModel>(CommonNames.EquipmentFile)).OrderBy(x => x.Type.Make).ToList();
         }
 
         private async Task EditItem(EquipmentModel item) {
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Edit item" },
                 {x => x.SnackbarInfo, $"Item updated successfully" },
+                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () },
+                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()},
                 {x => x.Item, item }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
@@ -45,14 +47,48 @@ namespace Sl.InventControl.Pages {
             var result = await dialog.Result;
 
             if (!result.Canceled) {
-                await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, result?.Data as EquipmentModel);
-                await OnInitializedAsync();
+                var changedItem = result?.Data as EquipmentModel;
+                if(!Items.Any(i => i.SerialNumber.Equals(changedItem.SerialNumber))) {
+
+                    await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, changedItem);
+                    await OnInitializedAsync();
+                }
+            }
+        }
+
+        private async Task CopyEquipment(EquipmentModel equipment) {
+
+            var types = await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new();
+            var newitem = new EquipmentModel {
+                Type = types.FirstOrDefault(t => t.Id.Equals(equipment.Type.Id)) ?? types[0],
+                Location = equipment.Location,
+                Remark = equipment.Remark            
+            };
+
+            var parameters = new DialogParameters<ManageEquipmentDialog> {
+                { x => x.Caption, $"Create new item" },
+                {x => x.SnackbarInfo, $"Item created successfully" },
+                { x => x.EquipmentTypes, types },
+                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()},
+                {x => x.Item, newitem }
+            };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small };
+
+            var dialog = await DialogService.ShowAsync<ManageEquipmentDialog>("Create item", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled) {
+                var item = result?.Data as EquipmentModel;
+                if(!Items.Any(i => i.SerialNumber.Equals(item.SerialNumber))) {
+                    await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                    await OnInitializedAsync();
+                }
             }
         }
 
         private async Task DeleteItem(EquipmentModel item) {
             var parameters = new DialogParameters<ConfirmDialog> {
-                { x => x.Caption, $"Are you sure you want to delete item '{item.Type} - {item.SerialNumber}'" },
+                { x => x.Caption, $"Are you sure you want to delete item '{item.Type.Type} {item.Type.Model} - ({item.SerialNumber})'" },
                 {x => x.SnackbarInfo, $"item '{item.Type} - {item.SerialNumber}' deleted" }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
@@ -175,18 +211,24 @@ namespace Sl.InventControl.Pages {
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Create new item" },
                 {x => x.SnackbarInfo, $"Item created successfully" },
-                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () }        
+                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () },
+                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()}
             };
-            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small };
 
             var dialog = await DialogService.ShowAsync<ManageEquipmentDialog>("Create item", parameters, options);
             var result = await dialog.Result;
 
             if (!result.Canceled) {
                 var item = result?.Data as EquipmentModel;
-                await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
-                await OnInitializedAsync();
+                if(!Items.Any(i => i.SerialNumber.Equals(item.SerialNumber))) {
+
+                    await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                    await OnInitializedAsync();
+                }
             }
         }
+
+        
     }
 }

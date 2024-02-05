@@ -12,29 +12,30 @@
     
     <DialogContent>
         <MudItem xs="12" >
-            <!--<MudPaper>
-                <MudStack Row="true">
-                    <MudTextField @bind-Value="@Item.Type.Make" Label="Make" ReadOnly="true" />
-                    <MudTextField @bind-Value="@Item.Type.Model" Label="Model" ReadOnly="true" />
-                </MudStack>
-            </MudPaper>-->
-
+            
             <MudPaper>
-                <MudStack Row="true">
+                <MudStack>
+
+                    
                     <MudSelect T="EquipmentTypeModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Type" ToStringFunc="@ToStringFunc">
                         @foreach (var type in EquipmentTypes) {
                             <MudSelectItem T="EquipmentTypeModel" Value="type">@(type.Type): @(type.Make) - @(type.Model)</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="false" />
+                    
+                    <MudSelect T="EquipmentLocationModel" Label="Location" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Location" ToStringFunc="@ToStringFunc2">
+                        @foreach (var location in EquipmentLocations) {
+                            <MudSelectItem T="EquipmentLocationModel" Value="location">@(location.Name)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    
+                    <MudTextField @bind-Value="@Item.Remark" Label="Remark" ReadOnly="false" />
+
+                    <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="false" OnKeyDown="OnKeyDown" Immediate="true" />
+
                 </MudStack>
             </MudPaper>
 
-            <MudStack Row="true">
-                <MudTextField @bind-Value="@Item.Location" Label="Location" ReadOnly="false" />
-                <MudTextField @bind-Value="@Item.Remark" Label="Remark" ReadOnly="false" />
-
-            </MudStack>
             
         </MudItem>
     </DialogContent>
@@ -59,16 +60,32 @@
     public List<EquipmentTypeModel> EquipmentTypes { get; set; } = new();
 
     [Parameter]
+    public List<EquipmentLocationModel> EquipmentLocations { get; set; } = new();
+
+    [Parameter]
     public EquipmentModel Item { get; set; } = new()
         {
-            Type = new()
+            Type = new(),
+            Location = new()
         };
 
     protected static readonly Func<EquipmentTypeModel, string> ToStringFunc = e => $"{e?.Type}: {e?.Make} - {e?.Model}";
+    protected static readonly Func<EquipmentLocationModel, string> ToStringFunc2 = e => e?.Name;
 
     private void Cancel() {
         MudDialog.Cancel();
         MudDialog.Close(DialogResult.Cancel());
+    }
+
+
+    async void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+            if(!string.IsNullOrEmpty(Item.SerialNumber) 
+            && !string.IsNullOrEmpty(Item.Location.Name)
+            && !string.IsNullOrEmpty(Item.Type.Type)) {
+                ExecuteOkClick();
+            }
+        }
     }
 
     private void ExecuteOkClick() {

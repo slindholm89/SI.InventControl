@@ -13,15 +13,15 @@
     <DialogContent>
         <MudPaper Class="pa-4 ma-4">
             <MudStack Row="true">
-                <MudTooltip Text="e.g Laptop">
-                    <MudTextField @bind-Value="@type" TextUpdateSuppression="false" Label="Item Type" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
+                <MudTooltip Text="Laptop">
+                    <MudTextField @bind-Value="@type" TextUpdateSuppression="false" Label="Item Type" ReadOnly="false" />
                 </MudTooltip>
                 
-                <MudTooltip Text="e.g Lenovo">
-                    <MudTextField @bind-Value="@make" TextUpdateSuppression="false" Label="Make" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
+                <MudTooltip Text="Lenovo">
+                    <MudTextField @bind-Value="@make" TextUpdateSuppression="false" Label="Manufacturer" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
                 </MudTooltip>
                 
-                <MudTooltip Text="e.g X1 Carbon">
+                <MudTooltip Text="X1 Carbon">
                     <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
                 </MudTooltip>
                 
@@ -30,7 +30,7 @@
         </MudPaper>
 
         <MudPaper Class="pa-4 ma-4">
-            <MudTable Items="@categories" Dense="true" Hover="true"> <!--Filter="new Func<EquipmentTypeModel,bool>(FilterFunc1)">-->
+            <MudTable Items="@categories" Dense="true" Hover="true">
                 
                 <HeaderContent>
                     <MudTh></MudTh>
@@ -77,16 +77,6 @@
     private string? make { get; set; }
     private string? model { get; set; }
 
-    /*
-    void OnKeyDown(KeyboardEventArgs args) {
-        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(category) && !categories.Any(c => c.Name.Equals(category, StringComparison.InvariantCultureIgnoreCase)))) {
-            AddEquipmentType();
-            
-            category = string.Empty;
-            Task.Delay(100).Wait();
-            StateHasChanged();
-        }
-    }*/
 
     private void Cancel() {
         MudDialog.Cancel();

@@ -6,7 +6,7 @@
         public EquipmentCategoryModel? Type { get; set; } */
         public EquipmentTypeModel Type { get; set; }
         public string? SerialNumber { get; set; }
-        public string? Location { get; set; }
+        public EquipmentLocationModel? Location { get; set; }
         public string? Remark { get; set; }
         public bool IsAvailable { get; set; } = true;
     }

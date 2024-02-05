@@ -12,16 +12,16 @@
     <ToolBarContent>
         <MudStack Row="true">
             <MudTooltip Text="Manage equipment categories">
-                <MudIconButton Icon="@Icons.Material.Filled.Category" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentCategories" />
+                <MudIconButton Icon="@Icons.Material.Filled.Devices" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentCategories" />
             </MudTooltip>
-
+            <!--
             <MudTooltip Text="Manage equipment Manufacturers">
                 <MudIconButton Icon="@Icons.Material.Filled.Factory" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentManufacturers" />
             </MudTooltip>
 
             <MudTooltip Text="Manage equipment Models">
                 <MudIconButton Icon="@Icons.Material.Filled.Devices" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentModels" />
-            </MudTooltip>
+            </MudTooltip>-->
 
             <MudTooltip Text="Manage equipment Locations">
                 <MudIconButton Icon="@Icons.Material.Filled.AddLocationAlt" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddEquipmentLocations" />
@@ -43,7 +43,6 @@
         
     <HeaderContent>
         <MudTh>Actions</MudTh>
-        <MudTh>Equipment ID</MudTh>
         <MudTh>Serial number</MudTh>
         <MudTh>Category</MudTh>
         <MudTh>Manufacturer</MudTh>
@@ -56,17 +55,16 @@
         <MudTd DataLabel="Actions">
             <MudStack Row="true">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditItem(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditItem(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => CopyEquipment(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteItem(context))" />
             </MudStack>
 
         </MudTd>
-        <MudTd DataLabel="Equipment ID">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Type">@context.Type.Type</MudTd>
         <MudTd DataLabel="Make">@context.Type.Make</MudTd>
         <MudTd DataLabel="Model">@context.Type.Model</MudTd>
-        <MudTd DataLabel="Location">@context.Location</MudTd>
+        <MudTd DataLabel="Location">@context.Location.Name</MudTd>
         <MudTd DataLabel="Remark">@context.Remark</MudTd>
         <MudTd DataLabel="Available">@(context.IsAvailable? "Yes" : "No")</MudTd>
     </RowTemplate>

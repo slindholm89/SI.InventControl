@@ -14,21 +14,18 @@ namespace Sl.InventControl.Service {
         public async Task<List<T>> GetDbContent<T>(string fileName) {
             
             var allItems = new List<T>();
-            lock (_fileLock) {
-                var filePath = Path.Combine(folderPath, fileName);
-                if (!File.Exists(filePath)) {
-                    File.WriteAllText(filePath, System.Text.Json.JsonSerializer.Serialize(new object()));
-                }
-
-                var fileContent = File.ReadAllText(filePath);
-                try {
-                    allItems.AddRange(System.Text.Json.JsonSerializer.Deserialize<T[]>(fileContent) ?? allItems.ToArray());
-                } catch { 
-                
+            var filePath = Path.Combine(folderPath, fileName);
+            try {
+                lock (_fileLock) {
+                    var fileContent = File.ReadAllText(filePath);
+                    allItems.AddRange(System.Text.Json.JsonSerializer.Deserialize<T[]>(fileContent));
                 }
             }
+            catch (Exception ex) {
 
+            }
             return allItems;
+            
         }
 
         public async Task AddDbContent<T>(string filename, IDbModel item) {

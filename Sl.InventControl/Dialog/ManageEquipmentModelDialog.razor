@@ -18,6 +18,7 @@
                     <MudSelectItem T="EquipmentManufacturerModel" Value="type">@(type.Name)</MudSelectItem>
                 }
             </MudSelect> *@
+            <MudTextField @bind-Value="@manufacturer" TextUpdateSuppression="false" Label="Manufactur name" ReadOnly="false" />
             <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
             <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
         </MudStack>
@@ -58,6 +59,7 @@
     [Parameter]
     public List<EquipmentModelModel> models { get; set; } = new List<EquipmentModelModel>();
 
+    private string? manufacturer { get; set; }
     private string? model { get; set; }
 
     void OnKeyDown(KeyboardEventArgs args) {

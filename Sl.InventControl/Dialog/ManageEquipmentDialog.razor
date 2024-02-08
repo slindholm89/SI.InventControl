@@ -22,7 +22,21 @@
                             <MudSelectItem T="EquipmentTypeModel" Value="type">@(type.Type): @(type.Make) - @(type.Model)</MudSelectItem>
                         }
                     </MudSelect>
-                    
+
+                    <MudSelect T="EquipmentLocationModel" Label="Manufacturer" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Location" ToStringFunc="@ToStringFunc2">
+                        @foreach (var location in EquipmentLocations)
+                        {
+                            <MudSelectItem T="EquipmentLocationModel" Value="location">@(location.Name)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="EquipmentLocationModel" Label="Model" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Location" ToStringFunc="@ToStringFunc2">
+                        @foreach (var location in EquipmentLocations)
+                        {
+                            <MudSelectItem T="EquipmentLocationModel" Value="location">@(location.Name)</MudSelectItem>
+                        }
+                    </MudSelect>
+
                     <MudSelect T="EquipmentLocationModel" Label="Location" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Location" ToStringFunc="@ToStringFunc2">
                         @foreach (var location in EquipmentLocations) {
                             <MudSelectItem T="EquipmentLocationModel" Value="location">@(location.Name)</MudSelectItem>

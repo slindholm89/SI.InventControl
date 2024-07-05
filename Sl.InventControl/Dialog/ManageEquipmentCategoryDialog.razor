@@ -1,6 +1,7 @@
 ﻿@using Sl.InventControl.Data;
 
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <MudDialog>
     <TitleContent>        
@@ -11,47 +12,63 @@
     </TitleContent>
     
     <DialogContent>
+        
         <MudPaper Class="pa-4 ma-4">
-            <MudStack Row="true">
-                <MudTooltip Text="Laptop">
-                    <MudTextField @bind-Value="@type" TextUpdateSuppression="false" Label="Item Type" ReadOnly="false" />
-                </MudTooltip>
-                
-                <MudTooltip Text="Lenovo">
-                    <MudTextField @bind-Value="@make" TextUpdateSuppression="false" Label="Manufacturer" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
-                </MudTooltip>
-                
-                <MudTooltip Text="X1 Carbon">
-                    <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model" ReadOnly="false" /> <!--OnKeyDown="@(e => OnKeyDown(e))" />-->
-                </MudTooltip>
-                
-                <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
-            </MudStack>
-        </MudPaper>
-
-        <MudPaper Class="pa-4 ma-4">
-            <MudTable Items="@categories" Dense="true" Hover="true">
-                
-                <HeaderContent>
-                    <MudTh></MudTh>
-                    <MudTh>Type</MudTh>
-                    <MudTh>Make</MudTh>
-                    <MudTh>Model</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Delete">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteCategory(context))" />
-                    </MudTd>
-                    <MudTd DataLabel="Type">@context.Type</MudTd>
-                    <MudTd DataLabel="Make">@context.Make</MudTd>
-                    <MudTd DataLabel="Model">@context.Model</MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudTablePager />
-                </PagerContent>
-            </MudTable>
+        
             
+             <MudStack>
+                <MudStack Row="true">
+                    <MudSelect T="EquipmentCategoryModel" Label="Manufacturer" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               ToStringFunc="@manufacturerConverter"
+                               Style="width: 200px;"
+                                @bind-Value=SelectedManufacturer>
+                        @foreach (var type in ManufacturerTypes) {
+                            <MudSelectItem T="EquipmentCategoryModel" Value="type">@(type.Manufacturer)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@(e => AddEquipmentType(typeof(EquipmentCategoryModel)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@DeleteSelectedManufacturer" />
+                </MudStack>
+                
+
+                <MudStack Row="true">
+                    <MudSelect T="ManufacturerCategoryModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               ToStringFunc="@typeConverter"
+                               Style="width: 100px;"
+                                @bind-Value="SelectedCategory">
+                        @if (SelectedManufacturer != null) {
+                            @foreach (var cat in SelectedManufacturer?.Categories) {
+                                <MudSelectItem T="ManufacturerCategoryModel" Value="cat">@(cat.Type)</MudSelectItem>
+                            }
+                        }
+                    
+                    </MudSelect>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@(e => AddEquipmentType(typeof(ManufacturerCategoryModel)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@DeleteSelectedType" />
+                </MudStack>
+
+                <MudStack Row="true">
+                    <MudSelect T="ManufacturerModelModel" Label="Model" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               ToStringFunc="@modelConverter"
+                               Style="width: 100px;"
+                                @bind-Value="SelectedModel">
+                        @if (SelectedCategory != null) {
+                            @foreach (var cat in SelectedCategory?.Models) {
+                                <MudSelectItem T="ManufacturerModelModel" Value="cat">@(cat.Model)</MudSelectItem>
+                            }                            
+                        }
+                    </MudSelect>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@(e => AddEquipmentType(typeof(ManufacturerModelModel)))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" @onclick="@DeleteSelectedModel" />
+                </MudStack>
+
+            </MudStack>
+
+
         </MudPaper>
+        
+        
     </DialogContent>
     
     
@@ -62,7 +79,8 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
 
     [Parameter] 
     public string Caption { get; set; } = "Manage equipment categories";
@@ -71,49 +89,151 @@
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentTypeModel> categories { get; set; } = new ();
+    public List<EquipmentCategoryModel> ManufacturerTypes { get; set; } = new List<EquipmentCategoryModel>();
 
-    private string? type { get; set; }
-    private string? make { get; set; }
-    private string? model { get; set; }
+    EquipmentCategoryModel? _selectedManufacturer;
+    public EquipmentCategoryModel? SelectedManufacturer {
+        get => _selectedManufacturer;
+        set {
+            _selectedManufacturer = value;
+            SelectedCategory = value?.Categories?.FirstOrDefault();
+            StateHasChanged();
+        }
+    }
 
+    ManufacturerCategoryModel? _selectedCategory;
+    public ManufacturerCategoryModel? SelectedCategory {
+        get => _selectedCategory;
+        set {
+            _selectedCategory = value;
+            SelectedModel = value?.Models?.FirstOrDefault();
+            StateHasChanged();
+        }
+    }
+    public ManufacturerModelModel? SelectedModel { get; set; }
+
+    readonly Func<EquipmentCategoryModel, string> manufacturerConverter = p => p?.Manufacturer ?? "N/A";
+    readonly Func<ManufacturerCategoryModel, string> typeConverter = p => p?.Type ?? "N/A";
+    readonly Func<ManufacturerModelModel, string> modelConverter = p => p?.Model ?? "N/A";
 
     private void Cancel() {
         MudDialog.Cancel();
     }
 
-    private void DeleteCategory(EquipmentTypeModel cat) {
-        categories = categories.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
-        StateHasChanged();
+    private void DeleteSelectedManufacturer() {
+        if(SelectedManufacturer != null) {
+            ManufacturerTypes = ManufacturerTypes.Where(x => !x.Id.Equals(SelectedManufacturer.Id)).ToList();
+            SelectedManufacturer = ManufacturerTypes.FirstOrDefault();
+            SelectedCategory = SelectedManufacturer?.Categories?.FirstOrDefault();
+            SelectedModel = SelectedCategory?.Models?.FirstOrDefault();
+        }
     }
 
-    private void AddEquipmentType() {
-        if (!string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(make) && !string.IsNullOrWhiteSpace(model) &&
-            !categories.Any(c => c.Type.Equals(type, StringComparison.InvariantCultureIgnoreCase) &&
-            c.Make.Equals(make, StringComparison.InvariantCultureIgnoreCase) && 
-            c.Model.Equals(model, StringComparison.InvariantCultureIgnoreCase))) {
-                
-                categories.Add(new EquipmentTypeModel { 
-                    Type = type,
-                    Make = make,
-                    Model = model
-                });
-
-                type = make = model = "";
-            StateHasChanged();
+    private void DeleteSelectedType() {
+        if (SelectedCategory != null) {
+            ManufacturerTypes.First(x => x.Id.Equals(SelectedManufacturer?.Id)).Categories = ManufacturerTypes.First(x => x.Id.Equals(SelectedManufacturer?.Id)).Categories.Where(t => !t.Id.Equals(SelectedCategory.Id)).ToList();
+            SelectedCategory = SelectedManufacturer?.Categories?.FirstOrDefault();
+            SelectedModel = SelectedCategory?.Models?.FirstOrDefault();
         }
+    }
+
+    private void DeleteSelectedModel() {
+        if (SelectedModel != null) {
+            ManufacturerTypes.First(x => x.Id.Equals(SelectedManufacturer?.Id))
+                .Categories.First(t => t.Id.Equals(SelectedCategory?.Id)).Models = 
+                ManufacturerTypes?.First(x => x.Id.Equals(SelectedManufacturer?.Id))?.
+                Categories?.First(t => t.Id.Equals(SelectedCategory?.Id))?.Models?.
+                Where(i => !i.Id.Equals(SelectedModel?.Id))?.ToList();
+            
+            SelectedModel = SelectedCategory?.Models?.FirstOrDefault();
+        }
+    }
+
+
+    private async void AddEquipmentType(Type type) {
+
+        DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var parameters = new DialogParameters<AddEquipmentCategoryDialog>();
+
+
+        if(type.Name.Equals("EquipmentCategoryModel")) {
+            parameters.Add("SnackbarInfo", "Manufacturer added successfully");
+            parameters.Add("Caption", "Add new manufacturer");       
+            parameters.Add("Label", "Manufacturer");
+
+            var dialog = await DialogService.ShowAsync<AddEquipmentCategoryDialog>("Add", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled) {
+                var data = result?.Data as string;
+
+                if(!ManufacturerTypes.Any(x => x.Manufacturer.Equals(data,StringComparison.InvariantCultureIgnoreCase))) {
+                    ManufacturerTypes.Add(new EquipmentCategoryModel { Manufacturer = data });
+                    SelectedManufacturer = ManufacturerTypes.FirstOrDefault(x => x.Manufacturer.Equals(data));
+                }
+            }
+
+
+        } else if (type.Name.Equals("ManufacturerCategoryModel") && SelectedManufacturer != null) {
+            parameters.Add("SnackbarInfo", "Item type added successfully");
+            parameters.Add("Caption", "Add new item type");
+            parameters.Add("Label", "Item type");
+
+            var dialog = await DialogService.ShowAsync<AddEquipmentCategoryDialog>("Add", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled) {
+                var data = result?.Data as string;
+
+                if(!SelectedManufacturer.Categories.Any(x => x.Type.Equals(data, StringComparison.InvariantCultureIgnoreCase))) {
+                    SelectedManufacturer?.Categories.Add(new ManufacturerCategoryModel { Type = data });
+                    SelectedCategory = SelectedManufacturer?.Categories.FirstOrDefault(x => x.Type.Equals(data));
+                }
+            }
+        } else if (type.Name.Equals("ManufacturerModelModel")) {
+            parameters.Add("SnackbarInfo", "Item moddel added successfully");
+            parameters.Add("Caption", "Add new model");
+            parameters.Add("Label", "Item model");
+
+
+            var dialog = await DialogService.ShowAsync<AddEquipmentCategoryDialog>("Add", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled) {
+                var data = result?.Data as string;
+
+                if(!SelectedCategory.Models.Any(x => x.Model.Equals(data, StringComparison.InvariantCultureIgnoreCase))) {
+                    SelectedCategory?.Models.Add(new ManufacturerModelModel { Model = data });
+                    SelectedModel = SelectedCategory?.Models.FirstOrDefault(x => x.Model.Equals(data));
+                }
+            }
+        }
+        else {
+            return;
+        }
+
+        StateHasChanged();
+
     }
 
     private void ExecuteOkClick() {
 
-        if (!categories.Any()) {
+        if (!ManufacturerTypes.Any()) {
             Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
         } else {
 
             Snackbar.Add(SnackbarInfo, Severity.Success);
 
-            MudDialog.Close(DialogResult.Ok(categories));
+            MudDialog.Close(DialogResult.Ok(ManufacturerTypes));
         }
 
+    }
+
+    protected override async Task OnInitializedAsync() {
+
+        SelectedManufacturer = ManufacturerTypes.FirstOrDefault();
+        SelectedCategory = SelectedManufacturer?.Categories?.FirstOrDefault();
+        SelectedModel = SelectedCategory?.Models?.FirstOrDefault();
+        StateHasChanged();
     }
 }

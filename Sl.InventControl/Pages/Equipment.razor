@@ -4,7 +4,6 @@
 
 @inject DbService dbService;
 @inject IDialogService DialogService
-
 <PageTitle>Equipment</PageTitle>
 
 
@@ -64,7 +63,7 @@
         <MudTd DataLabel="Type">@context.Type.Type</MudTd>
         <MudTd DataLabel="Make">@context.Type.Make</MudTd>
         <MudTd DataLabel="Model">@context.Type.Model</MudTd>
-        <MudTd DataLabel="Location">@context.Location.Name</MudTd>
+        <MudTd DataLabel="Location">@context.Location?.Name</MudTd>
         <MudTd DataLabel="Remark">@context.Remark</MudTd>
         <MudTd DataLabel="Available">@(context.IsAvailable? "Yes" : "No")</MudTd>
     </RowTemplate>

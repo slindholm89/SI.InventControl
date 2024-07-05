@@ -37,7 +37,7 @@ namespace Sl.InventControl.Pages {
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Edit item" },
                 {x => x.SnackbarInfo, $"Item updated successfully" },
-                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () },
+                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new () },
                 {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()},
                 {x => x.Item, item }
             };
@@ -57,22 +57,29 @@ namespace Sl.InventControl.Pages {
         }
 
         private async Task CopyEquipment(EquipmentModel equipment) {
+            
+            var types = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new();
+            var make = types.FirstOrDefault(m => m.Manufacturer.Equals(equipment.Type.Make, StringComparison.InvariantCultureIgnoreCase));
+            var type = make?.Categories.FirstOrDefault(t => t.Type.Equals(equipment.Type.Type, StringComparison.InvariantCultureIgnoreCase));
+            var model = type?.Models.FirstOrDefault(m => m.Model.Equals(equipment.Type.Model, StringComparison.InvariantCultureIgnoreCase));
+            var locations = await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new();
 
-            var types = await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new();
             var newitem = new EquipmentModel {
-                Type = types.FirstOrDefault(t => t.Id.Equals(equipment.Type.Id)) ?? types[0],
-                Location = equipment.Location,
-                Remark = equipment.Remark            
+                Type = new(),
+                Location = locations.FirstOrDefault(l => l.Id.Equals(equipment.Location?.Id))
             };
 
             var parameters = new DialogParameters<ManageEquipmentDialog> {
-                { x => x.Caption, $"Create new item" },
+                {x => x.Caption, $"Create new item" },
                 {x => x.SnackbarInfo, $"Item created successfully" },
-                { x => x.EquipmentTypes, types },
-                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()},
+                {x => x.EquipmentTypes, types },
+                {x => x.EquipmentLocations, locations},
+                {x => x.SelectedManufacturer, make},
+                {x => x.SelectedCategory,type },
+                {x => x.SelectedModel, model },
                 {x => x.Item, newitem }
             };
-            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
             var dialog = await DialogService.ShowAsync<ManageEquipmentDialog>("Create item", parameters, options);
             var result = await dialog.Result;
@@ -105,11 +112,11 @@ namespace Sl.InventControl.Pages {
 
         private async Task AddEquipmentCategories() {
 
-            var existingCategories = await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new ();
+            var existingCategories = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new ();
 
             var parameters = new DialogParameters<ManageEquipmentCategoryDialog> {
                 {x => x.SnackbarInfo, $"Categories updated successfully" },
-                {x => x.categories, existingCategories.ToList() }
+                {x => x.ManufacturerTypes, existingCategories.ToList() }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
@@ -117,12 +124,9 @@ namespace Sl.InventControl.Pages {
             var result = await dialog.Result;
             
             if (!result.Canceled) {
-                await dbService.ClearDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile);
-                var items = result?.Data as List<EquipmentTypeModel>;
-                
-                foreach(var item in items)
-                    await dbService.AddDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile, item);
-                
+                var items = result?.Data as List<EquipmentCategoryModel>;
+                await dbService.SetDbContent<List<EquipmentCategoryModel>>(CommonNames.EquipmentCategoryFile, items);
+
                 await OnInitializedAsync();
             }
         }
@@ -130,7 +134,7 @@ namespace Sl.InventControl.Pages {
         private async Task AddEquipmentManufacturers()
         {
 
-            var existingManufacturers = await dbService.GetDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile) ?? new List<EquipmentManufacturerModel>();
+            var existingManufacturers = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentManufacturerFile) ?? new List<EquipmentCategoryModel>();
 
             var parameters = new DialogParameters<ManageEquipmentManufacturerDialog> {
                 {x => x.SnackbarInfo, $"Manufacturers updated successfully" },
@@ -143,11 +147,11 @@ namespace Sl.InventControl.Pages {
 
             if (!result.Canceled)
             {
-                await dbService.ClearDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile);
-                var items = result?.Data as List<EquipmentManufacturerModel>;
+                await dbService.ClearDbContent<EquipmentCategoryModel>(CommonNames.EquipmentManufacturerFile);
+                var items = result?.Data as List<EquipmentCategoryModel>;
 
                 foreach (var item in items)
-                    await dbService.AddDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile, item);
+                    await dbService.AddDbContent<EquipmentCategoryModel>(CommonNames.EquipmentManufacturerFile, item);
 
                 await OnInitializedAsync();
             }
@@ -156,12 +160,12 @@ namespace Sl.InventControl.Pages {
         private async Task AddEquipmentModels()
         {
 
-            var existingModels = await dbService.GetDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile) ?? new List<EquipmentModelModel>();
+            var existingModels = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentModelFile) ?? new List<EquipmentCategoryModel>();
 
             var parameters = new DialogParameters<ManageEquipmentModelDialog> {
                 {x => x.SnackbarInfo, $"Models updated successfully" },
-                { x => x.ManufacturerTypes, await dbService.GetDbContent<EquipmentManufacturerModel>(CommonNames.EquipmentManufacturerFile) ?? new List<EquipmentManufacturerModel>() },
-                {x => x.models, existingModels.ToList() }
+                { x => x.ManufacturerTypes, await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentModelFile) ?? new List<EquipmentCategoryModel>() },
+                //{x => x.models, existingModels.ToList() }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
@@ -170,11 +174,11 @@ namespace Sl.InventControl.Pages {
 
             if (!result.Canceled)
             {
-                await dbService.ClearDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile);
-                var items = result?.Data as List<EquipmentModelModel>;
+                //await dbService.ClearDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile);
+                //var items = result?.Data as List<EquipmentModelModel>;
 
-                foreach (var item in items)
-                    await dbService.AddDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile, item);
+                //foreach (var item in items)
+                //    await dbService.AddDbContent<EquipmentModelModel>(CommonNames.EquipmentModelFile, item);
 
                 await OnInitializedAsync();
             }
@@ -210,11 +214,11 @@ namespace Sl.InventControl.Pages {
 
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Create new item" },
-                {x => x.SnackbarInfo, $"Item created successfully" },
-                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentTypeModel>(CommonNames.EquipmentCategoryFile) ?? new () },
-                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()}
+                { x => x.SnackbarInfo, $"Item created successfully" },
+                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new () },
+                { x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()}
             };
-            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small };
+            DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Small, FullWidth=true };
 
             var dialog = await DialogService.ShowAsync<ManageEquipmentDialog>("Create item", parameters, options);
             var result = await dialog.Result;
@@ -222,7 +226,6 @@ namespace Sl.InventControl.Pages {
             if (!result.Canceled) {
                 var item = result?.Data as EquipmentModel;
                 if(!Items.Any(i => i.SerialNumber.Equals(item.SerialNumber))) {
-
                     await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
                     await OnInitializedAsync();
                 }

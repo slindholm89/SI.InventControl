@@ -15,9 +15,12 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions() {
 
 var config = new SettingsModel(builder.Configuration);
 var groupSids = new List<string>();
-foreach (var group in config.Management.AccessGroups) {
-    var sid = (new NTAccount(group)).Translate(typeof(SecurityIdentifier)).Value;
-    groupSids.Add(sid);
+if(config.Management?.AccessGroups != null) {
+    foreach (var group in config.Management.AccessGroups) {
+        var sid = (new NTAccount(group)).Translate(typeof(SecurityIdentifier)).Value;
+        groupSids.Add(sid);
+    }
+
 }
 
 // Add services to the container.

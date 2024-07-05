@@ -1,4 +1,5 @@
 ﻿using Sl.InventControl.Data;
+using System.Text.Json;
 
 namespace Sl.InventControl.Service {
     public class DbService {
@@ -21,11 +22,24 @@ namespace Sl.InventControl.Service {
                     allItems.AddRange(System.Text.Json.JsonSerializer.Deserialize<T[]>(fileContent));
                 }
             }
-            catch (Exception ex) {
+            catch (Exception) {
 
             }
             return allItems;
             
+        }
+
+        public async Task SetDbContent<T>(string fileName, T item) {
+            var filePath = Path.Combine(folderPath, fileName);
+            try {
+                var content = System.Text.Json.JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
+                lock (_fileLock) {
+                    File.WriteAllText(filePath, content);
+                }
+            }
+            catch (Exception) {
+
+            }
         }
 
         public async Task AddDbContent<T>(string filename, IDbModel item) {
@@ -36,7 +50,7 @@ namespace Sl.InventControl.Service {
                 allItems?.Add((T)item);
             }
 
-            var content = System.Text.Json.JsonSerializer.Serialize(allItems);
+            var content = System.Text.Json.JsonSerializer.Serialize(allItems,new JsonSerializerOptions { WriteIndented = true});
             lock (_fileLock) {
                 File.WriteAllText(filePath, content);
             }
@@ -44,7 +58,7 @@ namespace Sl.InventControl.Service {
 
         public async Task ClearDbContent<T>(string filename) {
             var filePath = Path.Combine(folderPath, filename);
-            var content = System.Text.Json.JsonSerializer.Serialize(new List<T>());
+            var content = System.Text.Json.JsonSerializer.Serialize(new List<T>(), new JsonSerializerOptions { WriteIndented = true });
             lock (_fileLock) {
                 File.WriteAllText(filePath, content);
             }
@@ -59,7 +73,7 @@ namespace Sl.InventControl.Service {
             allItems.Remove(existingItem);
             allItems.Add((T)updateditem);
 
-            var content = System.Text.Json.JsonSerializer.Serialize(allItems);
+            var content = System.Text.Json.JsonSerializer.Serialize(allItems, new JsonSerializerOptions { WriteIndented = true });
             lock (_fileLock) {
                 File.WriteAllText(filePath, content);
             }
@@ -71,7 +85,7 @@ namespace Sl.InventControl.Service {
             var allItems = await GetDbContent<T>(filePath);
             allItems = allItems.Where(x => ((IDbModel)x).Id != item.Id).ToList();
             
-            var content = System.Text.Json.JsonSerializer.Serialize(allItems);
+            var content = System.Text.Json.JsonSerializer.Serialize(allItems, new JsonSerializerOptions { WriteIndented = true });
             lock (_fileLock) {
                 File.WriteAllText(filePath, content);
             }

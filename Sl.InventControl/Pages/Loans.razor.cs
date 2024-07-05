@@ -1,6 +1,7 @@
 ﻿using MudBlazor;
 using Sl.InventControl.Data;
 using Sl.InventControl.Dialog;
+using Sl.InventControl.Service;
 
 namespace Sl.InventControl.Pages {
     public partial class Loans {
@@ -52,7 +53,8 @@ namespace Sl.InventControl.Pages {
                     equipmentItem.IsAvailable = false;
                     await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, equipmentItem);
                 }
-
+                var pdfService = new PdfService();
+                pdfService.CreateUSWrapper(item);
                 await OnInitializedAsync();
             }
         }
@@ -117,6 +119,10 @@ namespace Sl.InventControl.Pages {
             }
 
                 
+        }
+
+        private async Task OpenUsDocument(LoanModel us) {
+            
         }
     }
 }

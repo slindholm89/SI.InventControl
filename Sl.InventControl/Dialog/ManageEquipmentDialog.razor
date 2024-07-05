@@ -17,13 +17,33 @@
                 <MudStack>
 
                     
-                    <MudSelect T="EquipmentTypeModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Type" ToStringFunc="@ToStringFunc">
-                        @foreach (var type in EquipmentTypes) {
-                            <MudSelectItem T="EquipmentTypeModel" Value="type">@(type.Type): @(type.Make) - @(type.Model)</MudSelectItem>
+                    <MudSelect T="EquipmentCategoryModel" Label="Manufacturer" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               @bind-Value="@SelectedManufacturer" ToStringFunc="@manufacturerConverter" Style="width: 200px;">
+                        @foreach (var manufacturer in EquipmentTypes) {
+                            <MudSelectItem T="EquipmentCategoryModel" Value="manufacturer">@(manufacturer.Manufacturer)</MudSelectItem>
                         }
                     </MudSelect>
                     
-                    <MudSelect T="EquipmentLocationModel" Label="Location" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@Item.Location" ToStringFunc="@ToStringFunc2">
+                    <MudSelect T="ManufacturerCategoryModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               @bind-Value="@SelectedCategory" ToStringFunc="@typeConverter" Style="width: 200px;">
+                        @if(SelectedManufacturer != null) {
+                            @foreach (var type in SelectedManufacturer?.Categories) {
+                                <MudSelectItem T="ManufacturerCategoryModel" Value="type">@(type.Type)</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="ManufacturerModelModel" Label="Model" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               @bind-Value="@SelectedModel" ToStringFunc="@modelConverter" Style="width: 200px;">
+                        @if(SelectedCategory != null) {
+                            @foreach (var model in SelectedCategory?.Models) {
+                                <MudSelectItem T="ManufacturerModelModel" Value="model">@(model.Model)</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="EquipmentLocationModel" Label="Location" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"
+                               @bind-Value="@Item.Location" ToStringFunc="@locationConverter" Style="width: 200px;">
                         @foreach (var location in EquipmentLocations) {
                             <MudSelectItem T="EquipmentLocationModel" Value="location">@(location.Name)</MudSelectItem>
                         }
@@ -57,20 +77,47 @@
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentTypeModel> EquipmentTypes { get; set; } = new();
+    public List<EquipmentCategoryModel> EquipmentTypes { get; set; } = new();
 
     [Parameter]
     public List<EquipmentLocationModel> EquipmentLocations { get; set; } = new();
 
+    EquipmentCategoryModel? _selectedManufacturer;
     [Parameter]
-    public EquipmentModel Item { get; set; } = new()
-        {
-            Type = new(),
-            Location = new()
-        };
+    public EquipmentCategoryModel? SelectedManufacturer { 
+        get => _selectedManufacturer; 
+        set {
+            _selectedManufacturer = value;
+            SelectedCategory = value?.Categories?.FirstOrDefault();
+            StateHasChanged();
+        } 
+    }
 
-    protected static readonly Func<EquipmentTypeModel, string> ToStringFunc = e => $"{e?.Type}: {e?.Make} - {e?.Model}";
-    protected static readonly Func<EquipmentLocationModel, string> ToStringFunc2 = e => e?.Name;
+    ManufacturerCategoryModel? _selectedCategory;
+    [Parameter]
+    public ManufacturerCategoryModel? SelectedCategory {
+        get => _selectedCategory;
+        set {
+            _selectedCategory = value;
+            SelectedModel = value?.Models?.FirstOrDefault();
+            StateHasChanged();
+        } 
+    }
+
+    [Parameter]
+    public ManufacturerModelModel? SelectedModel { get; set; }
+
+    [Parameter]
+    public EquipmentModel Item { get; set; } = new() {
+        Type = new(),
+        Location = new()
+    };
+
+    readonly Func<EquipmentCategoryModel, string> manufacturerConverter = p => p?.Manufacturer ?? "N/A";
+    readonly Func<ManufacturerCategoryModel, string> typeConverter = p => p?.Type ?? "N/A";
+    readonly Func<ManufacturerModelModel, string> modelConverter = p => p?.Model ?? "N/A";
+    readonly Func<EquipmentLocationModel, string> locationConverter = p => p?.Name ?? "N/A";
+
 
     private void Cancel() {
         MudDialog.Cancel();
@@ -92,9 +139,16 @@
 
         if(string.IsNullOrEmpty(Item.SerialNumber) || Item.Type == null) {
             Snackbar.Add("Please provide at least a serial number and Type", Severity.Warning);
-        }else {
+        }
+        else if (SelectedManufacturer == null || SelectedCategory == null || SelectedModel == null) {
+            Snackbar.Add("Please provide a manufacturer, type and model", Severity.Warning);
+        }
+        else {
 
             Snackbar.Add(SnackbarInfo, Severity.Success);
+            Item.Type.Make = SelectedManufacturer.Manufacturer;
+            Item.Type.Type = SelectedCategory.Type;
+            Item.Type.Model = SelectedModel.Model;
 
             MudDialog.Close(DialogResult.Ok(Item));
         }

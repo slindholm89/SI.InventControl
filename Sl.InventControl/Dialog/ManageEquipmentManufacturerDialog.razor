@@ -23,9 +23,9 @@
                     <MudListItem>
                         <MudStack Row="true">
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteManufacturer(cat))" />
-                            <MudText>@cat.Name</MudText>
-                            </MudStack>
-                        </MudListItem>
+                            <MudText>@cat.Manufacturer</MudText>
+                         </MudStack>
+                    </MudListItem>
                 }
             </MudList>
         </MudPaper>
@@ -48,13 +48,13 @@
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentManufacturerModel> manufacturers { get; set; } = new List<EquipmentManufacturerModel>();
+    public List<EquipmentCategoryModel> manufacturers { get; set; } = new List<EquipmentCategoryModel>();
 
     private string? manufacturer { get; set; }
 
     void OnKeyDown(KeyboardEventArgs args)
     {
-        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase))))
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Manufacturer.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase))))
         {
             AddEquipmentType();
 
@@ -69,7 +69,7 @@
         MudDialog.Cancel();
     }
 
-    private void DeleteManufacturer(EquipmentManufacturerModel cat)
+    private void DeleteManufacturer(EquipmentCategoryModel cat)
     {
         manufacturers = manufacturers.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
         StateHasChanged();
@@ -77,9 +77,9 @@
 
     private void AddEquipmentType()
     {
-        if (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Name.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase)))
+        if (!string.IsNullOrWhiteSpace(manufacturer) && !manufacturers.Any(c => c.Manufacturer.Equals(manufacturer, StringComparison.InvariantCultureIgnoreCase)))
         {
-            manufacturers.Add(new EquipmentManufacturerModel { Name = manufacturer });
+            manufacturers.Add(new EquipmentCategoryModel { Manufacturer = manufacturer });
             manufacturer = "";
             StateHasChanged();
         }

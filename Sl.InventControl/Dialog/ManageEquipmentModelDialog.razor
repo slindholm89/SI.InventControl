@@ -12,23 +12,39 @@
     
     <DialogContent>
         <MudStack Row="true">
-@*             <MudSelect T="EquipmentManufacturerModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@models.Type" ToStringFunc="@ToStringFunc">
-                @foreach (var type in ManufacturerTypes)
-                {
-                    <MudSelectItem T="EquipmentManufacturerModel" Value="type">@(type.Name)</MudSelectItem>
+            <MudSelect T="EquipmentCategoryModel" Label="Manufacturer" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@SelectedManufacturer">
+                @foreach (var type in ManufacturerTypes) {
+                    <MudSelectItem T="EquipmentCategoryModel" Value="type">@(type.Manufacturer)</MudSelectItem>
                 }
-            </MudSelect> *@
+                <MudSelectItem T="EquipmentCategoryModel">@(new EquipmentCategoryModel{Manufacturer = "Add new"})</MudSelectItem>
+            </MudSelect> 
+
+            <MudSelect T="ManufacturerCategoryModel" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@(SelectedCategory)">
+                @foreach (var cat in SelectedManufacturer?.Categories) {
+                    <MudSelectItem T="ManufacturerCategoryModel" Value="cat">@(cat.Type)</MudSelectItem>
+                }
+                <MudSelectItem T="ManufacturerCategoryModel">@(new ManufacturerCategoryModel { Type = "Add new" })</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="ManufacturerModelModel" Label="Model" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@(SelectedModel)">
+                @foreach (var cat in SelectedCategory?.Models) {
+                    <MudSelectItem T="ManufacturerModelModel" Value="cat">@(cat.Model)</MudSelectItem>
+                }
+                <MudSelectItem T="ManufacturerModelModel">@(new ManufacturerModelModel { Model = "Add new" })</MudSelectItem>
+            </MudSelect>
+
+
             <MudTextField @bind-Value="@model" TextUpdateSuppression="false" Label="Model name" ReadOnly="false" OnKeyDown="@(e => OnKeyDown(e))" />
             <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" @onclick="@AddEquipmentType" />
         </MudStack>
 
         <MudPaper>
             <MudList>
-                @foreach(var cat in models) {
+                @foreach (var cat in exsistingModels) {
                     <MudListItem>
                         <MudStack Row="true">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteModel(cat))" />
-                            <MudText>@cat.Name</MudText>
+                            <MudText>@cat.Model</MudText>
                         </MudStack>
                     </MudListItem>
                 }
@@ -53,16 +69,40 @@
     public string SnackbarInfo { get; set; } = "action confirmed";
 
     [Parameter]
-    public List<EquipmentManufacturerModel> ManufacturerTypes { get; set; } = new List<EquipmentManufacturerModel>();
+    public List<EquipmentCategoryModel> ManufacturerTypes { get; set; } = new List<EquipmentCategoryModel>();
 
-    [Parameter]
-    public List<EquipmentModelModel> models { get; set; } = new List<EquipmentModelModel>();
+    public EquipmentCategoryModel? SelectedManufacturer { get; set; }
+
+    public ManufacturerCategoryModel? SelectedCategory { get; set; }
+
+    public ManufacturerModelModel? SelectedModel { get; set; }
+
+    private List<EquipmentTypeModel> exsistingModels = new List<EquipmentTypeModel>();
 
     private string? model { get; set; }
 
-    void OnKeyDown(KeyboardEventArgs args) {
-        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(model) && !models.Any(c => c.Name.Equals(model, StringComparison.InvariantCultureIgnoreCase))))
+    protected override async Task OnInitializedAsync() {
+        await Task.Run(() =>
         {
+            foreach (var manufacturer in ManufacturerTypes) {
+
+                foreach (var category in manufacturer.Categories) {
+
+                    foreach (var model in category.Models) {
+                        exsistingModels.Add(new EquipmentTypeModel {
+                            Type = category.Type,
+                            Make = manufacturer.Manufacturer,
+                            Model = model.Model
+                        });
+                    }
+                }
+            }
+            
+        });
+    }
+
+    void OnKeyDown(KeyboardEventArgs args) {
+        if (args.Key == "Enter" && (!string.IsNullOrWhiteSpace(model) && !exsistingModels.Any(c => c.Model != null && c.Model.Equals(model, StringComparison.InvariantCultureIgnoreCase)))) {
             AddEquipmentType();
             
             model = string.Empty;
@@ -75,15 +115,15 @@
         MudDialog.Cancel();
     }
 
-    private void DeleteModel(EquipmentModelModel cat) {
-        models = models.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
+    private void DeleteModel(EquipmentTypeModel cat) {
+        exsistingModels = exsistingModels.Where(c => !c.Id.Equals(cat.Id, StringComparison.InvariantCultureIgnoreCase)).ToList();
         StateHasChanged();
     }
 
     private void AddEquipmentType() {
-        if (!string.IsNullOrWhiteSpace(model) && !models.Any(c => c.Name.Equals(model, StringComparison.InvariantCultureIgnoreCase)))
+        if (!string.IsNullOrWhiteSpace(model) && !exsistingModels.Any(c => c.Model.Equals(model, StringComparison.InvariantCultureIgnoreCase)))
         {
-            models.Add(new EquipmentModelModel { Name = model });
+            exsistingModels.Add(new EquipmentTypeModel { Model = "someModel" });
             model = "";
             StateHasChanged();
         }
@@ -91,14 +131,13 @@
 
     private void ExecuteOkClick() {
 
-        if (!models.Any())
-        {
+        if (!exsistingModels.Any()) {
             Snackbar.Add("Please provide at least 1 item type", Severity.Warning);
         } else {
 
             Snackbar.Add(SnackbarInfo, Severity.Success);
 
-            MudDialog.Close(DialogResult.Ok(models));
+            MudDialog.Close(DialogResult.Ok(exsistingModels));
         }
 
     }

@@ -123,7 +123,9 @@ namespace Sl.InventControl.Pages {
 
         private async Task OpenUsDocument(LoanModel us) {
             try {
-                pdfService.OpenReport(us.Id);
+                var filePath =  "/pdf/US-" + us.Id + ".pdf";
+                await JS.InvokeVoidAsyncIgnoreErrors("openPdf", filePath);
+                //pdfService.OpenReport(us.Id);
             }
             catch(Exception ex) {
                 var parameters = new DialogParameters<ConfirmDialog> {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using MudBlazor.Services;
 using Sl.InventControl.Data;
@@ -56,6 +57,10 @@ if (!app.Environment.IsDevelopment()) {
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new PhysicalFileProvider(config.Paths.WorkingFolder),
+    RequestPath = "/pdf"
+});
 
 app.UseRouting();
 

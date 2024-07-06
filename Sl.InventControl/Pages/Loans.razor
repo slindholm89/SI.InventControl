@@ -4,7 +4,9 @@
 
 @inject PdfService pdfService;
 @inject DbService dbService;
-@inject IDialogService DialogService
+@inject IDialogService DialogService;
+@inject IConfiguration Config;
+@inject IJSRuntime JS;
 
 <PageTitle>Loans</PageTitle>
 
@@ -33,6 +35,8 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => EditLoansAgreement(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.AssignmentReturn" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => ReturnLoansAgreement(context))" />
                 <MudIconButton Icon="@Icons.Custom.FileFormats.FileDocument" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => OpenUsDocument(context))" />
+                
+                
             </MudStack>
 
         </MudTd>

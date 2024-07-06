@@ -34,12 +34,23 @@ namespace Sl.InventControl.Pages {
         }
 
         private async Task EditItem(EquipmentModel item) {
+
+            var types = await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new();
+            var make = types.FirstOrDefault(m => m.Manufacturer.Equals(item.Type.Make, StringComparison.InvariantCultureIgnoreCase));
+            var type = make?.Categories.FirstOrDefault(t => t.Type.Equals(item.Type.Type, StringComparison.InvariantCultureIgnoreCase));
+            var model = type?.Models.FirstOrDefault(m => m.Model.Equals(item.Type.Model, StringComparison.InvariantCultureIgnoreCase));
+            var locations = await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new();
+
             var parameters = new DialogParameters<ManageEquipmentDialog> {
                 { x => x.Caption, $"Edit item" },
-                {x => x.SnackbarInfo, $"Item updated successfully" },
-                { x => x.EquipmentTypes, await dbService.GetDbContent<EquipmentCategoryModel>(CommonNames.EquipmentCategoryFile) ?? new () },
-                {x  => x.EquipmentLocations, await dbService.GetDbContent<EquipmentLocationModel>(CommonNames.EquipmentLocationFile) ?? new List<EquipmentLocationModel>() ?? new()},
-                {x => x.Item, item }
+                { x => x.SnackbarInfo, $"Item updated successfully" },
+                { x => x.EquipmentTypes, types },
+                { x  => x.EquipmentLocations, locations},
+                { x => x.SelectedManufacturer, make},
+                { x => x.SelectedCategory,type },
+                { x => x.SelectedModel, model },
+                { x => x.CanEditSerialNumber, true },
+                { x => x.Item, item }
             };
             DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
 
@@ -48,11 +59,13 @@ namespace Sl.InventControl.Pages {
 
             if (!result.Canceled) {
                 var changedItem = result?.Data as EquipmentModel;
-                if(!Items.Any(i => i.SerialNumber.Equals(changedItem.SerialNumber))) {
-
-                    await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, changedItem);
-                    await OnInitializedAsync();
-                }
+                await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, changedItem);
+                await dbService.UpdateDbContent<ItemHistoryModel>(changedItem.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                    Item = changedItem,
+                    Action = "Item properties changed",
+                    User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                });
+                await OnInitializedAsync();                
             }
         }
 
@@ -88,6 +101,11 @@ namespace Sl.InventControl.Pages {
                 var item = result?.Data as EquipmentModel;
                 if(!Items.Any(i => i.SerialNumber.Equals(item.SerialNumber))) {
                     await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                    await dbService.UpdateDbContent<ItemHistoryModel>(item.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel { 
+                        Item = item, 
+                        Action = "Item created",
+                        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                    });
                     await OnInitializedAsync();
                 }
             }
@@ -105,6 +123,11 @@ namespace Sl.InventControl.Pages {
 
             if (!result.Canceled) {
                 await dbService.RemoveDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                await dbService.UpdateDbContent<ItemHistoryModel>(item.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                    Item = item,
+                    Action = "Item deleted",
+                    User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                });
                 await OnInitializedAsync();
             }
 
@@ -227,6 +250,11 @@ namespace Sl.InventControl.Pages {
                 var item = result?.Data as EquipmentModel;
                 if(!Items.Any(i => i.SerialNumber.Equals(item.SerialNumber))) {
                     await dbService.AddDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                    await dbService.UpdateDbContent<ItemHistoryModel>(item.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                        Item = item,
+                        Action = "Item created",
+                        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                    });
                     await OnInitializedAsync();
                 }
             }

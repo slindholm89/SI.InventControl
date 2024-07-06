@@ -53,8 +53,8 @@ namespace Sl.InventControl.Pages {
                     equipmentItem.IsAvailable = false;
                     await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, equipmentItem);
                 }
-                var pdfService = new PdfService();
-                pdfService.CreateUSWrapper(item);
+                //var pdfService = new PdfService();
+                _ = await pdfService.CreateUSWrapper(item);
                 await OnInitializedAsync();
             }
         }
@@ -122,7 +122,20 @@ namespace Sl.InventControl.Pages {
         }
 
         private async Task OpenUsDocument(LoanModel us) {
-            
+            try {
+                pdfService.OpenReport(us.Id);
+            }
+            catch(Exception ex) {
+                var parameters = new DialogParameters<ConfirmDialog> {
+                { x => x.Caption, $"Error: {ex.GetType()} - {ex.Message}!" },
+                { x => x.SnackbarInfo, $"" }
+                };
+                DialogOptions options = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+                var dialog = await DialogService.ShowAsync<ConfirmDialog>("Return lending agreement", parameters, options);
+                var result = await dialog.Result;
+
+            }
+
         }
     }
 }

@@ -51,7 +51,7 @@
                     
                     <MudTextField @bind-Value="@Item.Remark" Label="Remark" ReadOnly="false" />
 
-                    <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="false" OnKeyDown="OnKeyDown" Immediate="true" />
+                    <MudTextField @bind-Value="@Item.SerialNumber" Label="Serial" ReadOnly="@CanEditSerialNumber" OnKeyDown="OnKeyDown" Immediate="true" />
 
                 </MudStack>
             </MudPaper>
@@ -112,6 +112,9 @@
         Type = new(),
         Location = new()
     };
+
+    [Parameter]
+    public bool CanEditSerialNumber { get; set; } = false;
 
     readonly Func<EquipmentCategoryModel, string> manufacturerConverter = p => p?.Manufacturer ?? "N/A";
     readonly Func<ManufacturerCategoryModel, string> typeConverter = p => p?.Type ?? "N/A";

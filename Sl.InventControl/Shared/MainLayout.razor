@@ -10,7 +10,7 @@
     
     <MudAppBar Color="Color.Dark" Fixed="true" Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />   
-        <MudCardHeader>InventControl</MudCardHeader>
+        <MudCardHeader Style="font-size: 20px; font-weight:1000">InventControl</MudCardHeader>
         <MudSpacer />
         <LoginDisplay />
         <MudIconButton Icon="@Icons.Material.Filled.LightMode" OnClick="@((e) => ToggleDarkmode())"></MudIconButton>
@@ -42,6 +42,7 @@
             },
             PaletteDark = new PaletteDark {
                 Background = Colors.Grey.Darken4,
+                AppbarText = Colors.Cyan.Lighten1,
                 DrawerBackground = Colors.Grey.Darken4,
                 AppbarBackground = Colors.Grey.Darken4,
                 Primary = Colors.Grey.Lighten4

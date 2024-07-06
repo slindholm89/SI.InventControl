@@ -42,6 +42,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<DbService>();
+builder.Services.AddSingleton<PdfService>();
 
 var app = builder.Build();
 

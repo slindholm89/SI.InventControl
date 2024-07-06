@@ -17,7 +17,9 @@ using static MudBlazor.CategoryTypes;
 namespace Sl.InventControl.Service {
     public class PdfService {
 
-        public PdfService() {
+        public PdfService(IConfiguration configuration) {
+
+            ReportsFolder = new SettingsModel(configuration).Paths.WorkingFolder;
 
             // NET6FIX - will be removed
             if (Capabilities.Build.IsCoreBuild)
@@ -42,7 +44,7 @@ namespace Sl.InventControl.Service {
 
 
 
-        public string CreateUSWrapper(LoanModel loan) {
+        public async Task<string> CreateUSWrapper(LoanModel loan) {
             _page = _document.AddPage();
             _gfx = XGraphics.FromPdfPage(_page);
 
@@ -176,6 +178,14 @@ namespace Sl.InventControl.Service {
             return filePath;
         }
 
+        public void OpenReport(string usNumber) {
+            var filePath = Path.Combine(ReportsFolder, "US-" + usNumber + ".pdf");
+            if (File.Exists(filePath)) {
+                System.Diagnostics.Process.Start(filePath);
+            } else {
+                throw new FileNotFoundException(filePath);
+            }
+        }
 
     }
 }

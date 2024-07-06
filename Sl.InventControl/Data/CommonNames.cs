@@ -7,5 +7,6 @@
         public const string EquipmentManufacturerFile = "equipmentManufactur.json";
         public const string EquipmentModelFile = "equipmentModel.json";
         public const string EquipmentLocationFile = "equipmentLocation.json";
+        public const string EquipmentHistoryFile = "History.json";
     }
 }

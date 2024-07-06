@@ -3,35 +3,54 @@
 @using Sl.InventControl.Service;
 
 @inject DbService dbService;
+@inject IConfiguration Configuration
 
 <PageTitle>Status overview</PageTitle>
 
 <h1>Status overview</h1>
 
-<MudTable Items="@loans" Dense="@dense" Hover="@hover">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Status overview</MudText>
-        <MudSpacer/>
-        <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@AddLoan" />
-        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@Refresh" />
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh>Loan</MudTh>
-    </HeaderContent>
-        
-    <RowTemplate>
-            <MudTd>@context.OwnerEmployee</MudTd>
-            @foreach (var item in context.Items) {
-                /*@if (package.DeploymentConditions.Any(c => c.Name == context.Name || context.MemberOf.Any(m => m.Name == c.Name))) {
-                    <MudTd>@string.Join(',',package.TaskSteps.Select(x => x.State).ToArray())</MudTd>
-                } else {
-                    <MudTd>"N/A"</MudTd>
-                }*/
-                <MudTd>@item.Type.Model</MudTd>
-            }
-                    
-    </RowTemplate>
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
+<MudPaper>
+    <MudTable Items="@Items" Dense="true" Hover="true" Filter="new Func<ItemHistoryModel,bool>(FilterFunc1)" SortLabel="Sort By">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Status overview</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <HeaderContent>
+
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ItemHistoryModel, object>(x => x.TimeStamp)" T="ItemHistoryModel">Date</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ItemHistoryModel, object>(x => x.Item?.SerialNumber)" T="ItemHistoryModel">Serial</MudTableSortLabel> 
+            </MudTh>
+            <MudTh>Type</MudTh>
+            <MudTh>Manufacturer</MudTh>
+            <MudTh>Model</MudTh>
+            <MudTh>Location</MudTh>
+            <MudTh>Action</MudTh>
+            <MudTh>Remark</MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ItemHistoryModel, object>(x => x.User)" T="ItemHistoryModel">User</MudTableSortLabel>                
+            </MudTh>
+
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.TimeStamp</MudTd>
+            <MudTd>@context.Item?.SerialNumber</MudTd>
+            <MudTd>@context.Item?.Type.Type</MudTd>
+            <MudTd>@context.Item?.Type.Make</MudTd>
+            <MudTd>@context.Item?.Type.Model</MudTd>
+            <MudTd>@context.Item?.Location?.Name</MudTd>
+            <MudTd>@context.Action</MudTd>
+            <MudTd>@context.Item?.Remark</MudTd>
+            <MudTd>@context.User</MudTd>
+            
+        </RowTemplate>
+        <!--<PagerContent>
+            <MudTablePager />
+        </PagerContent>-->
+    </MudTable>
+</MudPaper>
+

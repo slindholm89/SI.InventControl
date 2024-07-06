@@ -8,28 +8,34 @@
 
 <MudLayout>
     
-    <MudAppBar Color="Color.Dark" Fixed="true" Elevation="0">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />   
-        <MudCardHeader Style="font-size: 20px; font-weight:1000">InventControl</MudCardHeader>
+    <MudAppBar Color="Color.Dark" Fixed="true" Elevation="1">
+        <!--<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />   -->
+        <MudCardHeader Style="font-size: 20px; font-weight:1000;">InventControl</MudCardHeader>
         <MudSpacer />
         <LoginDisplay />
         <MudIconButton Icon="@Icons.Material.Filled.LightMode" OnClick="@((e) => ToggleDarkmode())"></MudIconButton>
     </MudAppBar>    
     
-    <MudDrawer @bind-Open="@_drawerOpen" DisableOverlay="true" Variant="@DrawerVariant.Persistent">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">Menu</MudText>
-        </MudDrawerHeader>
+    
+    <MudMainContent>
+        <MudDrawerContainer Class="mud-height-full">
 
-        <NavMenu />
-    </MudDrawer>
+            <MudDrawer @bind-Open="@_drawerOpen" Fixed="false" Elevation="3" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
+                <!-- <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">Menu</MudText>
+                </MudDrawerHeader>-->
 
-    <MudMainContent>       
-        <article class="content px-4">
+                <NavMenu />
+            </MudDrawer>
             
-            @Body
-        </article>
+            <MudContainer MaxWidth="MaxWidth.Large">
+                @Body
+            </MudContainer>
+
+        </MudDrawerContainer>
+
     </MudMainContent>
+    
 </MudLayout>
 
 @code {
@@ -44,15 +50,17 @@
                 Background = Colors.Grey.Darken4,
                 AppbarText = Colors.Cyan.Lighten1,
                 DrawerBackground = Colors.Grey.Darken4,
-                AppbarBackground = Colors.Grey.Darken4,
-                Primary = Colors.Grey.Lighten4
+                AppbarBackground = Colors.Grey.Lighten1,
+                Primary = Colors.Grey.Lighten1,
+                Secondary = Colors.Cyan.Darken4,
+                Tertiary = Colors.Blue.Lighten4
             }
 
         };
 
     private bool _isDarkMode = true;
 
-    bool _drawerOpen = true;
+    bool _drawerOpen = false;
 
     void ToggleDarkmode() {
         if (_isDarkMode) {

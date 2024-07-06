@@ -52,6 +52,11 @@ namespace Sl.InventControl.Pages {
                 foreach(var equipmentItem in item.Items) {
                     equipmentItem.IsAvailable = false;
                     await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, equipmentItem);
+                    await dbService.UpdateDbContent<ItemHistoryModel>(equipmentItem.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                        Item = equipmentItem,
+                        Action = $"Added to US with ID: '{item.Id}'",
+                        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                    });
                 }
                 //var pdfService = new PdfService();
                 _ = await pdfService.CreateUSWrapper(item);
@@ -77,10 +82,16 @@ namespace Sl.InventControl.Pages {
                 var item = result?.Data as LoanModel;
                 await dbService.UpdateDbContent<LoanModel>(CommonNames.LoansFile, item);
 
+                // Add new items to US
                 foreach(var existingItem in existingItems) {
                     if(!item.Items.Any(i => i.Id == existingItem.Id)) {
                         existingItem.IsAvailable = true;
                         await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, existingItem);
+                        await dbService.UpdateDbContent<ItemHistoryModel>(existingItem.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                            Item = existingItem,
+                            Action = $"Returned from US with ID: '{agreement.Id}'",
+                            User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                        });
                     }
                         
                 }
@@ -88,6 +99,11 @@ namespace Sl.InventControl.Pages {
                 foreach (var equipmentItem in item.Items) {
                     equipmentItem.IsAvailable = false;
                     await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, equipmentItem);
+                    await dbService.UpdateDbContent<ItemHistoryModel>(equipmentItem.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                        Item = equipmentItem,
+                        Action = $"Added to US with ID: '{agreement.Id}'",
+                        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                    });
                 }
 
                 await OnInitializedAsync();
@@ -113,12 +129,31 @@ namespace Sl.InventControl.Pages {
                 foreach (var item in items) {
                     item.IsAvailable = true;
                     await dbService.UpdateDbContent<EquipmentModel>(CommonNames.EquipmentFile, item);
+                    await dbService.UpdateDbContent<ItemHistoryModel>(item.Id + "-" + CommonNames.EquipmentHistoryFile, new ItemHistoryModel {
+                        Item = item,
+                        Action = $"Returned from US with ID: '{agreement.Id}'",
+                        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User?.Identity?.Name
+                    });
                 }
 
                 await OnInitializedAsync();
             }
 
                 
+        }
+
+
+        private string ReturnStyleFunc(LoanModel arg1) {
+            TimeSpan? daysLeft = (arg1.ReturnByDate - DateTime.Now);
+            
+            if(daysLeft.HasValue && daysLeft < TimeSpan.FromDays(1)) {
+                return "color:red";
+            }
+
+            if(daysLeft.HasValue && daysLeft < TimeSpan.FromDays(3)) {
+                return "color:yellow";
+            }
+            return "";
         }
 
         private async Task OpenUsDocument(LoanModel us) {

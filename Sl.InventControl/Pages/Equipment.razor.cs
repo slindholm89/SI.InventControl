@@ -260,6 +260,13 @@ namespace Sl.InventControl.Pages {
             }
         }
 
-        
+        private string AvilableStyleFunc(EquipmentModel arg1) {
+            if (arg1.IsAvailable) {
+                return "color:green";
+            } else {
+                return "color:red";
+            }
+        }
+
     }
 }

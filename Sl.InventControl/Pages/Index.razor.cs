@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Extensions.Configuration;
 using Sl.InventControl.Data;
+using static MudBlazor.CategoryTypes;
 
 
 namespace Sl.InventControl.Pages {

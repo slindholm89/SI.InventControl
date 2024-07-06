@@ -8,8 +8,9 @@
 
 <PageTitle>Equipment</PageTitle>
 
-
-<MudTable Items="@Items" Dense="true" Hover="true" Filter="new Func<EquipmentModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+<MudStack>
+    <MudSpacer />
+    <MudTable Items="@Items" Dense="true" Hover="true" Filter="new Func<EquipmentModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
     <ToolBarContent>
         <MudStack Row="true">
             <MudTooltip Text="Manage equipment categories">
@@ -59,17 +60,18 @@
                 <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => CopyEquipment(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Medium" @onclick="@(e => DeleteItem(context))" />
             </MudStack>
-
         </MudTd>
+
         <MudTd DataLabel="Serial number">@context.SerialNumber</MudTd>
         <MudTd DataLabel="Type">@context.Type.Type</MudTd>
         <MudTd DataLabel="Make">@context.Type.Make</MudTd>
         <MudTd DataLabel="Model">@context.Type.Model</MudTd>
         <MudTd DataLabel="Location">@context.Location?.Name</MudTd>
         <MudTd DataLabel="Remark">@context.Remark</MudTd>
-        <MudTd DataLabel="Available">@(context.IsAvailable? "Yes" : "No")</MudTd>
+        <MudTd DataLabel="Available" Style="@(AvilableStyleFunc(context))">@(context.IsAvailable ? "Yes" : "No")</MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />
     </PagerContent>
 </MudTable>
+</MudStack>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using MudBlazor.Services;
@@ -13,6 +14,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions() {
     Args = args,
     ApplicationName = System.Diagnostics.Process.GetCurrentProcess().ProcessName
 });
+builder.Host.UseWindowsService();
 
 var config = new SettingsModel(builder.Configuration);
 var groupSids = new List<string>();
@@ -38,6 +40,7 @@ builder.Services.AddAuthorization(options => {
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
@@ -45,6 +48,7 @@ builder.Services.AddMudServices();
 builder.Services.AddSingleton<DbService>();
 builder.Services.AddSingleton<PdfService>();
 
+StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
